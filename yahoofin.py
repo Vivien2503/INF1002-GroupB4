@@ -1,32 +1,81 @@
 import yfinance as yf
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 
+# Download SPY data
 SPY = yf.Ticker("SPY")
 data = SPY.history(period="max")
-print(data.to_string())
 
-# Filter data by year (example: 2024)
+# Filter data by year
 year = 2024
 data_year = data[data.index.year == year]
+close = data_year["Close"].values
 
-# Calculate average closing price for the filtered year
-average_close = data_year["Close"].mean()
-print(f"Average closing price for SPY in {year}: {average_close}")
+# 1. Simple Moving Average (SMA)
+def compute_sma(series, window):
+    return series.rolling(window=window).mean()
 
-# Plot closing prices for the filtered year as a line graph
-plt.figure(figsize=(12,6))
-plt.plot(data_year.index, data_year["Close"], label=f"Closing Price {year}", color="blue")
-plt.axhline(average_close, color="orange", linestyle="--", label=f"Average: {average_close:.2f}")
-plt.title(f"SPY Closing Prices & Average ({year})")
-plt.xlabel("Date")
-plt.ylabel("Closing Price")
+window_size = 5  # Example window size
+sma = compute_sma(data_year["Close"], window_size)
+print(f"\n{window_size}-Day SMA for {year} (first 10):\n", sma.head(10))
+
+# 2. Upward and Downward Runs
+up_runs = []
+down_runs = []
+current_run = 0
+current_dir = None
+for i in range(1, len(close)):
+    if close[i] > close[i-1]:
+        if current_dir == "up":
+            current_run += 1
+        else:
+            if current_dir == "down" and current_run > 0:
+                down_runs.append(current_run)
+            current_dir = "up"
+            current_run = 1
+    elif close[i] < close[i-1]:
+        if current_dir == "down":
+            current_run += 1
+        else:
+            if current_dir == "up" and current_run > 0:
+                up_runs.append(current_run)
+            current_dir = "down"
+            current_run = 1
+    else:
+        if current_dir == "up" and current_run > 0:
+            up_runs.append(current_run)
+        elif current_dir == "down" and current_run > 0:
+            down_runs.append(current_run)
+        current_dir = None
+        current_run = 0
+# Add last run
+if current_dir == "up" and current_run > 0:
+    up_runs.append(current_run)
+elif current_dir == "down" and current_run > 0:
+    down_runs.append(current_run)
+print(f"\nUpward runs: {len(up_runs)}, Longest: {max(up_runs) if up_runs else 0}")
+print(f"Downward runs: {len(down_runs)}, Longest: {max(down_runs) if down_runs else 0}")
+
+# Bar chart of run lengths
+plt.figure(figsize=(10,5))
+plt.bar(range(len(up_runs)), up_runs, color='green', label='Upward Runs')
+plt.bar(range(len(down_runs)), down_runs, color='red', label='Downward Runs', alpha=0.6)
+plt.title(f'Upward/Downward Run Lengths ({year})')
+plt.xlabel('Run Number')
+plt.ylabel('Run Length')
 plt.legend()
-
-# Set x-axis to show month and year
-ax = plt.gca()
-ax.xaxis.set_major_locator(mdates.MonthLocator())
-ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
-plt.xticks(rotation=45)
 plt.tight_layout()
 plt.show()
+
+# 3. Daily Returns
+daily_returns = data_year["Close"].pct_change()
+print(f"\nDaily returns (first 10):\n", daily_returns.head(10))
+
+# 4. Max Profit Calculation (Best Time to Buy and Sell Stock II)
+def max_profit(prices):
+    profit = 0
+    for i in range(1, len(prices)):
+        if prices[i] > prices[i-1]:
+            profit += prices[i] - prices[i-1]
+    return profit
+profit = max_profit(close)
+print(f"\nMax profit (multiple transactions) for {year}: {profit:.2f}")
