@@ -2,19 +2,20 @@ import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def plot_annotated_runs(data, window_size, year, ticker="SPY"):
+
+def plot_annotated_runs(data, window_size, years, ticker="SPY"):
     """
-    Plots daily closing price and SMA for a given year,
+    Plots daily closing price and SMA for a given range of years,
     with colored markers for upward/downward runs and streaks.
     """
-    data_year = data[data.index.year == year]
-    if data_year.empty:
-        print(f"No data available for {ticker} in {year}.")
+    data_years = data[data.index.year.isin(years)]
+    if data_years.empty:
+        print(f"No data available for {ticker} in years {list(years)}.")
         return
 
-    sma = data_year["Close"].rolling(window=window_size).mean()
-    close = data_year["Close"].values
-    dates = data_year.index
+    sma = data_years["Close"].rolling(window=window_size).mean()
+    close = data_years["Close"].values
+    dates = data_years.index
 
     # Identify runs and streaks
     colors = []
@@ -53,18 +54,19 @@ def plot_annotated_runs(data, window_size, year, ticker="SPY"):
     for i in range(1, len(close)):
         plt.scatter(dates[i], close[i], color=colors[i-1], marker=markers[i-1], s=60)
 
-    plt.title(f"{ticker} Daily Closing Price vs {window_size}-Day SMA ({year})\nUpward/Downward Runs and Streaks Highlighted")
+    plt.title(f"{ticker} Daily Closing Price vs {window_size}-Day SMA ({min(years)}-{max(years)})\nUpward/Downward Runs and Streaks Highlighted")
     plt.xlabel("Date")
     plt.ylabel("Price (USD)")
     plt.legend()
     plt.tight_layout()
     plt.show()
 
+
 if __name__ == "__main__":
     ticker = "SPY"
-    year = 2024 # <--- Change this value to the year you want to plot
+    years = range(2022, 2025) # <--- Change this range for the years you want to plot
     window_size = 5
     data = yf.Ticker(ticker).history(period="max")
     data.index = pd.to_datetime(data.index)
-    plot_annotated_runs(data, window_size, year, ticker)
+    plot_annotated_runs(data, window_size, years, ticker)
 
