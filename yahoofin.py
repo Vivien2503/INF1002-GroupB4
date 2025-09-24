@@ -95,8 +95,12 @@ def daily_returns(df_yr: pd.DataFrame):
     manual[1:] = (Pt[1:] - Pt[:-1]) / Pt[:-1]
     return builtin, manual
 
-def max_profit_multiple(prices: np.ndarray) -> float:
-    return float(np.maximum(prices[1:] - prices[:-1], 0).sum())
+def max_profit(prices: np.ndarray) -> float:
+    profit = 0
+    for i in range(1, len(prices)):
+        if prices[i] > prices[i-1]:
+            profit += prices[i] - prices[i-1]
+    return profit
 
 def best_time_to_buy_sell(prices: np.ndarray):
     n, i = len(prices), 0
@@ -218,146 +222,94 @@ def plot_sma(df_year: pd.DataFrame, window=5, outdir=Path("static"), ticker="SPY
     plt.close(fig)
     return out_path
 
-def interactive_date_analysis(data_filtered):
-    print("\n" + "="*60)
-    print("INTERACTIVE BUY/SELL RECOMMENDATION SYSTEM")
-    print("="*60)
-    print(f"Available data range: {data_filtered.index[0].date()} to {data_filtered.index[-1].date()}")
-    print("Enter 'quit' to exit")
-    while True:
-        user_input = input("\nEnter a date (YYYY-MM-DD): ").strip()
-        if user_input.lower() in ['quit', 'exit', 'q']:
-            print("Exiting interactive mode.")
-            break
-        result = get_recommendation(user_input, data_filtered)
-        if isinstance(result, str):
-            print(f"\nError: {result}")
-            continue
-        if not isinstance(result, dict):
-            print("\nError: Analysis result is not a dictionary.")
-            continue
-        if 'date' not in result:
-            print("\nError: Analysis result is missing the 'date' key.")
-            continue
-        print(f"\n📊 ANALYSIS FOR {result['date']}")
-        print(f"💰 Price: ${result.get('price', float('nan')):.2f}")
-        print(f"📈 {result.get('recommendation', 'N/A')}")
-        print(f"🎯 Confidence: {result.get('confidence', 'N/A')} (Score: {result.get('score', 'N/A')})")
-        print("\n📋 Analysis Details:")
-        for i, signal in enumerate(result.get('signals', []), 1):
-            print(f"  {i}. {signal}")
-        if result.get('future_validation'):
-            print(f"\n{result['future_validation']}")
-        print("-" * 50)
-
-def get_recommendation(target_date_str, data, sma_window=20, lookback_days=5, lookahead_days=10):
-    try:
-        target_date = pd.to_datetime(target_date_str).tz_localize('UTC')
-    except:
-        return "Invalid date format. Please use 'YYYY-MM-DD' format."
-    if target_date not in data.index:
-        closest_date = min(data.index, key=lambda x: abs(x - target_date))
-        if abs((closest_date - target_date).days) > 7:
-            return f"Date {target_date_str} is too far from available data. Closest date is {closest_date.date()}"
-        target_date = closest_date
-        print(f"Using closest available date: {target_date.date()}")
-    try:
-        target_idx = data.index.get_loc(target_date)
-    except:
-        return "Date not found in data range."
-    if target_idx < max(sma_window, lookback_days):
-        return f"Not enough historical data for analysis. Need at least {max(sma_window, lookback_days)} days before the target date."
-    target_price = data['Close'].iloc[target_idx]
-    analysis = {
-        'date': target_date.date(),
-        'price': target_price,
-        'signals': [],
-        'score': 0,
-        'confidence': 0
-    }
-    sma = data['Close'].rolling(window=sma_window).mean()
-    target_sma = sma.iloc[target_idx]
-    if target_price > target_sma * 1.02:
-        analysis['signals'].append(f"Price (${target_price:.2f}) is {((target_price/target_sma-1)*100):.1f}% above {sma_window}-day SMA (${target_sma:.2f}) - OVERBOUGHT signal")
-        analysis['score'] -= 2
-    elif target_price < target_sma * 0.98:
-        analysis['signals'].append(f"Price (${target_price:.2f}) is {((target_sma/target_price-1)*100):.1f}% below {sma_window}-day SMA (${target_sma:.2f}) - OVERSOLD signal")
-        analysis['score'] += 2
-    else:
-        analysis['signals'].append(f"Price (${target_price:.2f}) is near {sma_window}-day SMA (${target_sma:.2f}) - NEUTRAL")
-    lookback_start = target_idx - lookback_days
-    recent_prices = data['Close'].iloc[lookback_start:target_idx+1]
-    if len(recent_prices) > 1:
-        trend_slope = np.polyfit(range(len(recent_prices)), recent_prices.values, 1)[0]
-        if trend_slope > 0:
-            analysis['signals'].append(f"Recent {lookback_days}-day trend: UPWARD (${trend_slope:.2f}/day)")
-            analysis['score'] -= 1
-        else:
-            analysis['signals'].append(f"Recent {lookback_days}-day trend: DOWNWARD (${trend_slope:.2f}/day)")
-            analysis['score'] += 1
-    recent_data = data.iloc[max(0, target_idx-30):target_idx+1]
-    recent_high = recent_data['High'].max()
-    recent_low = recent_data['Low'].min()
-    price_position = (target_price - recent_low) / (recent_high - recent_low)
-    if price_position > 0.8:
-        analysis['signals'].append(f"Price near 30-day high (${recent_high:.2f}) - potential RESISTANCE")
-        analysis['score'] -= 1
-    elif price_position < 0.2:
-        analysis['signals'].append(f"Price near 30-day low (${recent_low:.2f}) - potential SUPPORT")
-        analysis['score'] += 1
-    else:
-        analysis['signals'].append(f"Price in middle of 30-day range (${recent_low:.2f} - ${recent_high:.2f})")
-    if 'Volume' in data.columns:
-        avg_volume = data['Volume'].rolling(window=20).mean().iloc[target_idx]
-        current_volume = data['Volume'].iloc[target_idx]
-        if current_volume > avg_volume * 1.5:
-            analysis['signals'].append("High volume day - increased conviction in price move")
-            analysis['confidence'] += 1
-        elif current_volume < avg_volume * 0.5:
-            analysis['signals'].append("Low volume day - less conviction in price move")
-            analysis['confidence'] -= 1
-    future_validation = ""
-    if target_idx + lookahead_days < len(data):
-        future_prices = data['Close'].iloc[target_idx:target_idx+lookahead_days+1]
-        future_return = (future_prices.iloc[-1] - target_price) / target_price * 100
-        if future_return > 2:
-            future_validation = f"✓ HINDSIGHT: Price rose {future_return:.1f}% in next {lookahead_days} days - was good BUY"
-        elif future_return < -2:
-            future_validation = f"✗ HINDSIGHT: Price fell {future_return:.1f}% in next {lookahead_days} days - was good SELL"
-        else:
-            future_validation = f"→ HINDSIGHT: Price moved {future_return:.1f}% in next {lookahead_days} days - was NEUTRAL"
-    if analysis['score'] >= 2:
-        recommendation = "🟢 BUY SIGNAL - Multiple indicators suggest good buying opportunity"
-    elif analysis['score'] <= -2:
-        recommendation = "🔴 SELL SIGNAL - Multiple indicators suggest selling or avoiding"
-    elif analysis['score'] == 1:
-        recommendation = "🟡 WEAK BUY - Some positive indicators"
-    elif analysis['score'] == -1:
-        recommendation = "🟡 WEAK SELL - Some negative indicators"
-    else:
-        recommendation = "⚪ NEUTRAL - Mixed or weak signals"
-    confidence_level = "High" if abs(analysis['score']) >= 3 else "Medium" if abs(analysis['score']) >= 2 else "Low"
-    return {
-        'recommendation': recommendation,
-        'confidence': confidence_level,
-        'score': analysis['score'],
-        'signals': analysis['signals'],
-        'future_validation': future_validation,
-        'price': target_price,
-        'date': analysis['date']
-    }
-
 def main():
+    # Amandaa's legacy workflow: analyze a single year (2024)
+    stock_symbol = "SPY"
+    SPY = yf.Ticker(stock_symbol)
+    data = SPY.history(period="max")
+    year = 2024
+    data_year = data[data.index.year == year]
+    close = data_year["Close"].values
+
+    # Count daily upward and downward movements
+    up_days = sum(1 for i in range(1, len(close)) if close[i] > close[i-1])
+    down_days = sum(1 for i in range(1, len(close)) if close[i] < close[i-1])
+    print(f"\nIn {year}, Up days: {up_days}, Down days: {down_days}")
+
+    # Identify runs
+    up_runs = []
+    down_runs = []
+    current_run = 0
+    current_dir = None
+    for i in range(1, len(close)):
+        if close[i] > close[i-1]:
+            if current_dir == "up":
+                current_run += 1
+            else:
+                if current_dir == "down" and current_run > 0:
+                    down_runs.append(current_run)
+                current_dir = "up"
+                current_run = 1
+        elif close[i] < close[i-1]:
+            if current_dir == "down":
+                current_run += 1
+            else:
+                if current_dir == "up" and current_run > 0:
+                    up_runs.append(current_run)
+                current_dir = "down"
+                current_run = 1
+        else:
+            if current_dir == "up" and current_run > 0:
+                up_runs.append(current_run)
+            elif current_dir == "down" and current_run > 0:
+                down_runs.append(current_run)
+            current_dir = None
+            current_run = 0
+    # Add last run
+    if current_dir == "up" and current_run > 0:
+        up_runs.append(current_run)
+    elif current_dir == "down" and current_run > 0:
+        down_runs.append(current_run)
+    print(f"\nUpward runs: {len(up_runs)}, Longest: {max(up_runs) if up_runs else 0}")
+    print(f"Downward runs: {len(down_runs)}, Longest: {max(down_runs) if down_runs else 0}")
+
+    # Plot Closing Prices with SMA
+    window_size = 5
+    sma = calculate_sma(data_year, window=window_size)
+    plt.figure(figsize=(10,5))
+    plt.plot(data_year.index, data_year["Close"], label="Closing Price", color="blue")
+    plt.plot(data_year.index, sma, label=f"{window_size}-Day SMA", color="orange")
+    plt.title(f"{stock_symbol} Closing Prices and SMA ({year})")
+    plt.xlabel("Date")
+    plt.ylabel("Price")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    # Plot Run Lengths Bar Chart
+    plt.figure(figsize=(10,5))
+    plt.bar(range(len(up_runs)), up_runs, color='green', label='Upward Runs')
+    plt.bar(range(len(down_runs)), down_runs, color='red', label='Downward Runs', alpha=0.6)
+    plt.title(f'Upward/Downward Run Lengths ({year})')
+    plt.xlabel('Run Number')
+    plt.ylabel('Run Length')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    # Daily Returns
+    daily_returns = data_year["Close"].pct_change()
+    print(f"\nDaily returns (first 10):\n", daily_returns.head(10))
+
+    # Max Profit Calculation (Best Time to Buy and Sell Stock II)
+    profit = max_profit(close)
+    print(f"\nMax profit (multiple transactions) for {year}: {profit:.2f}")
+
+    # Tristan's broader workflow: analyze by year range
     ticker = "SPY"
     years = (2023, 2024)
-
-    data = get_data(ticker=ticker, start="2023-01-01")
     data_years = filter_years(data, years)
-    if data_years.empty:
-        print(f"No data for {ticker} within {years}.")
-        return
-
-    print(f"Pulled {len(data)} rows; filtered to {len(data_years)} rows for years {years}")
+    print(f"\nPulled {len(data)} rows; filtered to {len(data_years)} rows for years {years}")
 
     # Daily returns 
     builtin_ret, manual_ret = daily_returns(data_years)
@@ -383,7 +335,7 @@ def main():
         print("Longest downward streak: N/A")
 
     # Max profit & explicit transactions
-    profit = max_profit_multiple(close_vals)
+    profit = max_profit(close_vals)
     print(f"\nMax profit (multiple transactions) for {years}: {profit:.2f}")
     tx = best_time_to_buy_sell(close_vals)
     if tx:
@@ -407,9 +359,6 @@ def main():
         runs_path = plot_year_with_runs(df_year, ticker=ticker)
         print(f"Saved: {sma_path}")
         print(f"Saved: {runs_path}")
-
-    # Interactive recommendation system on data_years
-    interactive_date_analysis(data_years)
 
 if __name__ == "__main__":
     print("Matplotlib backend:", matplotlib.get_backend())
