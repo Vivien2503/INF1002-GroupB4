@@ -25,7 +25,7 @@ sma = compute_sma(data_filtered["Close"], window_size)
 print(f"\n{window_size}-Day SMA (first 10 values):")
 print(sma.head(10))
 
-# --- streak analysis functions unchanged ---
+# --- streak analysis functions ---
 def calculate_streaks(prices):
     if len(prices) < 2:
         return [], [], []
@@ -103,8 +103,6 @@ print(f"\n=== TOP 3 LONGEST DOWNWARD STREAKS ===")
 for i, (start_date, end_date, length, _, start_price, end_price) in enumerate(find_longest_streaks(streak_details, "down", 3), 1):
     loss = ((end_price - start_price) / start_price) * 100
     print(f"{i}. {length} days: {start_date.date()} → {end_date.date()} | Loss: {loss:.2f}%")
-
-# (plots, daily returns, max profit code unchanged for brevity)
 
 # --- interactive recommendation functions ---
 def get_recommendation(target_date_str, data, sma_window=20, lookback_days=5, lookahead_days=10):
