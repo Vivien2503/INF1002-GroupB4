@@ -46,14 +46,14 @@ if __name__ == "__main__":
     print("Trades (buy,sell indices):", trades)
 
     # --- Example with real S&P 500 ETF (SPY) data ---
-    data = yf.download("SPY", start="2022-01-01", end=None, progress=False)
+    data = yf.download("SPY", start="2023-01-01", end=None, progress=False)
     if "Close" not in data.columns or data["Close"].empty:
         print("No 'Close' price data found for SPY in the given range.")
     else:
         closes = data["Close"].squeeze().astype(float).tolist()
         profit_spy = max_profit_multiple(closes)
         trades_spy = extract_trades(closes)
-        print("\nSPY from 2022 to now:")
+        print("\nSPY from 2023 to now:")
         print("Max Profit:", profit_spy)
         print("Number of trades:", len(trades_spy))
         # Print actual buy/sell dates and prices
