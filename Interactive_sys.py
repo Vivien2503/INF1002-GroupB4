@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-# Download SPY data
+# Download SPY data (can be replaced by any other stock)
 SPY = yf.Ticker("SPY")
 data = SPY.history(period="max")
 
-# Filter data by year range
+# Set date range for the interactive mode
 start_year = 2023
 end_year = 2025
 data_filtered = data[(data.index.year >= start_year) & (data.index.year <= end_year)]
@@ -16,7 +16,7 @@ close = data_filtered["Close"].values
 print(f"Analyzing SPY data from {start_year} to {end_year}")
 print(f"Total trading days: {len(data_filtered)}")
 
-# --- streak analysis functions unchanged ---
+# --- analysis of upward and downward streaks ---
 def calculate_streaks(prices):
     if len(prices) < 2:
         return [], [], []
@@ -94,8 +94,6 @@ print(f"\n=== TOP 3 LONGEST DOWNWARD STREAKS ===")
 for i, (start_date, end_date, length, _, start_price, end_price) in enumerate(find_longest_streaks(streak_details, "down", 3), 1):
     loss = ((end_price - start_price) / start_price) * 100
     print(f"{i}. {length} days: {start_date.date()} → {end_date.date()} | Loss: {loss:.2f}%")
-
-# (plots, daily returns, max profit code unchanged for brevity)
 
 # --- interactive recommendation functions ---
 def get_recommendation(target_date_str, data, sma_window=20, lookback_days=5, lookahead_days=10):
@@ -229,6 +227,6 @@ def interactive_date_analysis():
 
 # === AUTO-START INTERACTIVE MODE ===
 if __name__ == "__main__":
-    # Immediately start the interactive prompt when the script runs
+    
     interactive_date_analysis()
 
