@@ -16,15 +16,6 @@ close = data_filtered["Close"].values
 print(f"Analyzing SPY data from {start_year} to {end_year}")
 print(f"Total trading days: {len(data_filtered)}")
 
-# 1. Simple Moving Average (SMA)
-def compute_sma(series, window):
-    return series.rolling(window=window).mean()
-
-window_size = 5
-sma = compute_sma(data_filtered["Close"], window_size)
-print(f"\n{window_size}-Day SMA (first 10 values):")
-print(sma.head(10))
-
 # --- streak analysis functions unchanged ---
 def calculate_streaks(prices):
     if len(prices) < 2:
