@@ -38,4 +38,4 @@ def plot_closing_vs_sma(ticker="SPY", start="2023-01-01", end=None, period=30):
 
 # Run the function when the script is executed
 if __name__ == "__main__":
-    plot_closing_vs_sma(ticker="SPY", start="2022-01-01", end=None, period=30)
+    plot_closing_vs_sma(ticker="SPY", start="2023-01-01", end=None, period=30)
