@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import yfinance as yf
 import pandas as pd
 
-def plot_closing_vs_sma(ticker="SPY", start="2022-01-01", end="2025-01-01", period=30):
+def plot_closing_vs_sma(ticker="SPY", start="2023-01-01", end=None, period=30):
     """
     Plots the daily closing price against the Simple Moving Average (SMA).
 
@@ -38,4 +38,4 @@ def plot_closing_vs_sma(ticker="SPY", start="2022-01-01", end="2025-01-01", peri
 
 # Run the function when the script is executed
 if __name__ == "__main__":
-    plot_closing_vs_sma(ticker="SPY", start="2022-01-01", end="2025-01-01", period=30)
+    plot_closing_vs_sma(ticker="SPY", start="2022-01-01", end=None, period=30)
