@@ -14,17 +14,18 @@ import pandas as pd
 import yfinance as yf
 from pathlib import Path
 from datetime import datetime
+import sys
 
 TICKER = "SPY"
 START = "2023-01-01"
-SMA_WINDOW = 5
+DEFAULT_SMA_WINDOW = 5
 SHOW_PLOTS = True  
 
 # Data  
 def get_data(ticker=TICKER, start=START, end=None) -> pd.DataFrame:
     return yf.Ticker(ticker).history(start=start, end=end, auto_adjust=False)
 
-def calculate_sma(df: pd.DataFrame, window=SMA_WINDOW) -> pd.Series:
+def calculate_sma(df: pd.DataFrame, window=DEFAULT_SMA_WINDOW) -> pd.Series:
     return df["Close"].rolling(window=window).mean()
 
 # Upward and Downward Runs
@@ -59,8 +60,8 @@ def compute_runs(close_values: np.ndarray):
         )
     return up_runs, down_runs
 
-# Plotting of Charts
-def plot_sma(df_year: pd.DataFrame, ticker=TICKER, window=SMA_WINDOW, outdir=Path("static")):
+# Plotting SMA
+def plot_sma(df_year: pd.DataFrame, ticker=TICKER, window=DEFAULT_SMA_WINDOW, outdir=Path("static")):
     outdir.mkdir(parents=True, exist_ok=True)
     sma = calculate_sma(df_year, window)
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -73,12 +74,13 @@ def plot_sma(df_year: pd.DataFrame, ticker=TICKER, window=SMA_WINDOW, outdir=Pat
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
     plt.xticks(rotation=45)
     plt.tight_layout()
-    out_path = outdir / f"{ticker}_{year}_sma.png"
+    out_path = outdir / f"{ticker}_{year}_sma_{window}.png"
     plt.savefig(out_path, dpi=144)
     if SHOW_PLOTS: plt.show()
     plt.close(fig)
     return out_path
 
+# Plotting Runs
 def plot_runs(df_year: pd.DataFrame, ticker=TICKER, outdir=Path("static")):
     outdir.mkdir(parents=True, exist_ok=True)
     close = df_year["Close"].to_numpy()
@@ -103,7 +105,6 @@ def plot_runs(df_year: pd.DataFrame, ticker=TICKER, outdir=Path("static")):
         ])
         return line
 
-    # Longest UP
     if up_runs:
         u = max(up_runs, key=lambda r: r["length"])
         s, e = u["start"], u["start"] + u["length"]
@@ -114,7 +115,6 @@ def plot_runs(df_year: pd.DataFrame, ticker=TICKER, outdir=Path("static")):
                 ha="left", va="bottom",
                 path_effects=[pe.Stroke(linewidth=3, foreground="white"), pe.Normal()])
 
-    # Longest DOWN
     if down_runs:
         d = max(down_runs, key=lambda r: r["length"])
         s, e = d["start"], d["start"] + d["length"]
@@ -140,15 +140,32 @@ def plot_runs(df_year: pd.DataFrame, ticker=TICKER, outdir=Path("static")):
 
 # Main
 def main():
+    if len(sys.argv) > 1:
+        try:
+            sma_window = int(sys.argv[1])
+        except ValueError:
+            print("Invalid SMA window in argument, will ask interactively.")
+            sma_window = None
+    else:
+        sma_window = None
+
+    if sma_window is None:
+        user_in = input(f"Enter SMA window (default={DEFAULT_SMA_WINDOW}): ").strip()
+        if user_in.isdigit():
+            sma_window = int(user_in)
+        else:
+            sma_window = DEFAULT_SMA_WINDOW
+
     df = get_data()
     if df.empty:
         print("No data returned."); return
+
     current_year = datetime.now().year
     for yr in range(pd.Timestamp(START).year, current_year + 1):
         df_year = df[df.index.year == yr]
         if df_year.empty:
             continue
-        p1 = plot_sma(df_year, ticker=TICKER)
+        p1 = plot_sma(df_year, ticker=TICKER, window=sma_window)
         p2 = plot_runs(df_year, ticker=TICKER)
         print(f"Saved: {p1}\nSaved: {p2}")
 
