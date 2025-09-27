@@ -32,16 +32,16 @@ def get_sma_for_date(
     if end is None:
         end = date.today().isoformat()
 
-    # 1. Download data
+    # Download data
     data = yf.download(ticker, start=start, end=end, progress=False)
     if data.empty:
         print("No data found for the given parameters.")
         return None
 
-    # 2. Compute SMA
+    # Compute SMA
     data['SMA'] = data['Close'].rolling(window=period, min_periods=1).mean()
 
-    # 3. Find SMA for the target date
+    # Find SMA for the target date
     idx = pd.to_datetime(target_date)
     if idx not in data.index:
         if snap_to_previous:
@@ -62,7 +62,7 @@ def get_sma_for_date(
         print(f"\nSMA on {target_date} ({period}-day): {sma_value:.2f}")
         return sma_value
 
-    # 4. Optionally save all SMA values
+    # Optionally save all SMA values
     if save_to_csv:
         data['SMA'].to_csv(csv_filename)
         print(f"SMA values saved to {os.path.abspath(csv_filename)}")
@@ -81,7 +81,7 @@ if __name__ == "__main__":
         target_date=user_date
     )
 
-#Max Profit Calculation part ***
+# Max Profit Calculation part ***
 
     def max_profit_multiple(prices):
     profit = 0.0
