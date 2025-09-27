@@ -1,65 +1,67 @@
-# Best Time to Buy and Sell Stock II (multiple transactions allowed)
-
 import yfinance as yf
+import pandas as pd
 
 def max_profit_multiple(prices):
-    """
-    Return the maximum profit when multiple buy/sell transactions are allowed.
-    prices: list of daily prices
-    """
     profit = 0.0
     for i in range(1, len(prices)):
-        gain = prices[i] - prices[i - 1]
-        if gain > 0:
-            profit += gain
-    return profit
+        g = prices[i] - prices[i - 1]
+        if g > 0:
+            profit += g
+    return float(profit)
 
 def extract_trades(prices):
-    """
-    Return a list of (buy_index, sell_index) pairs that achieve the same max profit.
-    """
-    trades = []
-    i, n = 0, len(prices)
+    trades, i, n = [], 0, len(prices)
     while i < n - 1:
-        # find local minimum (buy)
-        while i < n - 1 and prices[i + 1] <= prices[i]:
-            i += 1
+        while i < n - 1 and prices[i + 1] <= prices[i]: i += 1
         buy = i
-
-        # find local maximum (sell)
-        while i < n - 1 and prices[i + 1] >= prices[i]:
-            i += 1
+        while i < n - 1 and prices[i + 1] >= prices[i]: i += 1
         sell = i
-
-        if sell > buy:
-            trades.append((buy, sell))
+        if sell > buy: trades.append((buy, sell))
         i += 1
     return trades
 
 if __name__ == "__main__":
-    # --- Example with a small list ---
-    prices = [7, 1, 5, 3, 6, 4]
-    profit = max_profit_multiple(prices)
-    trades = extract_trades(prices)
-    print("Example prices:", prices)
-    print("Max Profit:", profit)
-    print("Trades (buy,sell indices):", trades)
+    # Inputs
+    ticker = (input("Enter ticker: ") or "SPY").strip().upper()
+    start = (input("Enter start date (YYYY-MM-DD): ").strip() or "2023-01-01")
+    end_in = input("Enter end date (YYYY-MM-DD): ").strip()
+    end = end_in if end_in else None
 
-    # --- Example with real S&P 500 ETF (SPY) data ---
-    data = yf.download("SPY", start="2023-01-01", end=None, progress=False)
-    if "Close" not in data.columns or data["Close"].empty:
-        print("No 'Close' price data found for SPY in the given range.")
+    # Download
+    data = yf.download(ticker, start=start, end=end, progress=False, auto_adjust=False)
+    if data.empty or "Close" not in data.columns:
+        print(f"No 'Close' data for {ticker} in {start} to {end or 'today'}.")
+        raise SystemExit(0)
+
+    closes = data["Close"].squeeze().astype(float).to_list()
+    pairs = extract_trades(closes)
+    profit = max_profit_multiple(closes)
+
+    # Summary to console
+    actual_start = data.index[0].date()
+    actual_end = data.index[-1].date()
+    print(f"\n{ticker} from {actual_start} to {actual_end}:")
+    print(f"- Trading days: {len(closes)}")
+    print(f"- Number of trades: {len(pairs)}")
+    print(f"- Max Profit: {profit:.2f}")
+
+    # Build trades dataframe
+    rows = []
+    for b, s in pairs:
+        rows.append({
+            "buy_date": data.index[b].date(),
+            "sell_date": data.index[s].date(),
+            "buy_price": round(closes[b], 4),
+            "sell_price": round(closes[s], 4),
+            "gain": round(closes[s] - closes[b], 4),
+        })
+    trades_df = pd.DataFrame(rows, columns=["buy_date","sell_date","buy_price","sell_price","gain"])
+
+    # Save Buy and Sell dates to CSV
+    save_csv = input("Save trades to CSV? (y/n): ").strip().lower() == "y"
+    if save_csv:
+        outname = f"{ticker}_{actual_start}_to_{actual_end}_trades.csv"
+        trades_df.to_csv(outname, index=False)
+        print(f"Saved trades to: {outname}")
     else:
-        closes = data["Close"].squeeze().astype(float).tolist()
-        profit_spy = max_profit_multiple(closes)
-        trades_spy = extract_trades(closes)
-        print("\nSPY from 2023 to now:")
-        print("Max Profit:", profit_spy)
-        print("Number of trades:", len(trades_spy))
-        # Print actual buy/sell dates and prices
-        for buy_idx, sell_idx in trades_spy:
-            buy_date = data.index[buy_idx].date()
-            sell_date = data.index[sell_idx].date()
-            buy_price = closes[buy_idx]
-            sell_price = closes[sell_idx]
-            print(f"Buy on {buy_date} at {buy_price:.2f}, Sell on {sell_date} at {sell_price:.2f}")
+        print("CSV export skipped.")
