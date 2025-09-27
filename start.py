@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+from datetime import datetime
 import pandas as pd
 import yfinance as yf
 import matplotlib.pyplot as plt
@@ -63,7 +64,7 @@ def index():
 
 @app.route('/sma',methods=['GET', 'POST'])
 def sma_page():
-    return render_template('SMA.html')
+    return render_template('sma.html')
 
 @app.route('/updwnruns',methods=['GET', 'POST'])
 def about_page():
@@ -76,6 +77,37 @@ def contact_page():
 @app.route('/maxprofcalc',methods=['GET', 'POST'])
 def services_page():
     return render_template('maxprofcalc.html')
+
+@app.route('/sma2', methods=['POST'])
+def sma2():
+    start_date_raw = request.form['start_date']
+    end_date_raw   = request.form['end_date']
+
+    start_date = datetime.strptime(start_date_raw, "%Y-%m-%d").strftime("%d-%m-%Y")
+    end_date   = datetime.strptime(end_date_raw, "%Y-%m-%d").strftime("%d-%m-%Y")
+    
+    df = yf.download("SPY", start=start_date_raw, end=end_date_raw) # Download SPY data
+    if df.empty:
+        return "<h2>No data available for that date range. Try different dates.</h2>"
+
+    plt.figure(figsize=(10,5)) #Plot
+    plt.plot(df.index, df['Close'], label='SPY Close Price')
+    plt.legend()
+    plt.title("SPY with Simple Moving Average")
+
+    img = io.BytesIO()     # Save plot to base64
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plot_url = base64.b64encode(img.getvalue()).decode()
+
+    return render_template(
+    'sma2.html',
+    start_date=start_date,
+    end_date=end_date,
+    plot_url=plot_url
+)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
