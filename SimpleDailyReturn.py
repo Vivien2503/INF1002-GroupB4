@@ -19,7 +19,7 @@ def compute_daily_returns(df: pd.DataFrame):
     return builtin, manual
 
 def main():
-    # Get user input date
+    # Get user to input date
     user_date_str = input("Enter a date (YYYY-MM-DD): ").strip()
     try:
         user_date = datetime.strptime(user_date_str, "%Y-%m-%d").date()
@@ -37,7 +37,6 @@ def main():
     df["BuiltinReturn"] = builtin * 100  
     df["ManualReturn"] = manual * 100    
     
-    # Ensure index is date-only for lookup
     df.index = df.index.date
 
     if user_date not in df.index:
