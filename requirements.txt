@@ -1,2 +1,8 @@
 matplotlib
 yfinance
+panda
+numpy
+os
+datetime
+pathlib
+forex-python
