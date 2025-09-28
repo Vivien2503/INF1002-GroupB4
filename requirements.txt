@@ -5,3 +5,4 @@ numpy
 os
 datetime
 pathlib
+forex-python
