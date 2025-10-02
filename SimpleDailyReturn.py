@@ -5,9 +5,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime
 
-TICKER = "SPY"
-
-def get_data(ticker=TICKER, start="2023-01-01", end=None) -> pd.DataFrame:
+def get_data(ticker: str, start="2023-01-01", end=None) -> pd.DataFrame:
     return yf.Ticker(ticker).history(start=start, end=end, auto_adjust=False)
 
 def compute_daily_returns(df: pd.DataFrame):
@@ -19,7 +17,15 @@ def compute_daily_returns(df: pd.DataFrame):
     return builtin, manual
 
 def main():
-    # Get user to input date
+    # Ask user to input tickers
+    tickers_str = input("Enter ticker symbols separated by commas (e.g. SPY,AAPL,MSFT): ").strip()
+    tickers = [t.strip().upper() for t in tickers_str.split(",") if t.strip()]
+
+    if not tickers:
+        print("No tickers provided.")
+        return
+
+    # Ask user for a date
     user_date_str = input("Enter a date (YYYY-MM-DD): ").strip()
     try:
         user_date = datetime.strptime(user_date_str, "%Y-%m-%d").date()
@@ -27,28 +33,28 @@ def main():
         print("Invalid date format. Please use YYYY-MM-DD.")
         return
 
-    # Fetch data from 2023 up to today
-    df = get_data()
-    if df.empty:
-        print("No data returned.")
-        return
+    # Loop through all user-provided tickers
+    for ticker in tickers:
+        df = get_data(ticker)
+        if df.empty:
+            print(f"No data returned for {ticker}.")
+            continue
 
-    builtin, manual = compute_daily_returns(df)
-    df["BuiltinReturn"] = builtin * 100  
-    df["ManualReturn"] = manual * 100    
-    
-    df.index = df.index.date
+        builtin, manual = compute_daily_returns(df)
+        df["BuiltinReturn"] = builtin * 100
+        df["ManualReturn"] = manual * 100
+        df.index = df.index.date
 
-    if user_date not in df.index:
-        print(f"No trading data for {user_date} (market closed or holiday).")
-        return
+        if user_date not in df.index:
+            print(f"No trading data for {ticker} on {user_date} (market closed or holiday).")
+            continue
 
-    row = df.loc[user_date]
-    print(f"\nTicker: {TICKER}")
-    print(f"Date: {user_date}")
-    print(f"Close Price: {row['Close']:.2f}")
-    print(f"Daily Return (pandas): {row['BuiltinReturn']:.2f}%")
-    print(f"Daily Return (manual): {row['ManualReturn']:.2f}%")
+        row = df.loc[user_date]
+        print(f"\nTicker: {ticker}")
+        print(f"Date: {user_date}")
+        print(f"Close Price: {row['Close']:.2f}")
+        print(f"Daily Return (pandas): {row['BuiltinReturn']:.2f}%")
+        print(f"Daily Return (manual): {row['ManualReturn']:.2f}%")
 
 if __name__ == "__main__":
     main()
