@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Stock Analysis Results</title>
+</head>
+<body>
+    <h1>Interactive Stock Analysis Results</h1>
+    
+    <h2>{{ result.ticker }} Analysis</h2>
+    
+    <h3>Streak Analysis</h3>
+    <p><b>Upward streaks:</b> {{ result.upward_count }} | <b>Downward streaks:</b> {{ result.downward_count }}</p>
+    <p><b>Longest up streak:</b> {{ result.longest_up_streak }} days | <b>Average:</b> {{ result.avg_up_streak }}</p>
+    <p><b>Longest down streak:</b> {{ result.longest_down_streak }} days | <b>Average:</b> {{ result.avg_down_streak }}</p>
+    
+    {% if result.recommendation %}
+        {% if result.recommendation.error %}
+            <p style="color: red;"><b>Error:</b> {{ result.recommendation.error }}</p>
+        {% else %}
+            <h3>Trading Analysis for {{ result.recommendation.date }}</h3>
+            <p><b>Analysis Date:</b> {{ result.analysis_date }}</p>
+            <p><b>Target Currency:</b> {{ result.target_currency }}</p>
+            <p><i>Using closest available date: {{ result.recommendation.date }}</i></p>
+            
+            <p><b>Native Price:</b> ${{ "%.2f"|format(result.recommendation.price_native) }} USD</p>
+            {% if result.recommendation.price_converted %}
+                <p><b>Converted Price:</b> {{ "%.2f"|format(result.recommendation.price_converted) }} {{ result.target_currency }}</p>
+            {% else %}
+                <p><b>Converted Price:</b> Not Available ({{ result.target_currency }})</p>
+            {% endif %}
+            
+            {% if result.recommendation.recommendation == "BUY SIGNAL" %}
+                <p style="color: green;"><b>Recommendation: {{ result.recommendation.recommendation }}</b></p>
+            {% elif result.recommendation.recommendation == "SELL SIGNAL" %}
+                <p style="color: red;"><b>Recommendation: {{ result.recommendation.recommendation }}</b></p>
+            {% else %}
+                <p style="color: orange;"><b>Recommendation: {{ result.recommendation.recommendation }}</b></p>
+            {% endif %}
+            
+            <p><b>Confidence:</b> {{ result.recommendation.confidence_pct }}</p>
+            
+            <h4>Technical Indicators:</h4>
+            {% for signal in result.recommendation.signals %}
+                <p>{{ loop.index }}. {{ signal }}</p>
+            {% endfor %}
+        {% endif %}
+    {% endif %}
+
+    <p>Calculated using Buy Sell Analysis.py</p>
+
+    <p>
+        <a href="/updwnruns">Run Another Analysis</a> | 
+        <a href="/">Back to Main Menu</a>
+    </p>
+</body>
+</html>
