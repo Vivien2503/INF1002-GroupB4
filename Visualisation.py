@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # Visualisation.py
-# Visualisation.py
 '''Visualization helpers for financial time series.
 
 This module contains functions to fetch price history and produce plots:
