@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 # Visualisation.py
+# Visualisation.py
+'''Visualization helpers for financial time series.
+
+This module contains functions to fetch price history and produce plots:
+- plot_sma: saves a chart of Close price with a simple moving average (SMA).
+- compute_runs / plot_runs: detect streaks of consecutive up/down days and
+    visualize the longest runs.
+
+The scripts use yfinance to fetch data and matplotlib for plotting.
+'''
 import matplotlib
 try:
     matplotlib.use("TkAgg")  
@@ -23,14 +33,57 @@ SHOW_PLOTS = True
 
 # Data  
 def get_data(ticker=TICKER, start=START, end=None) -> pd.DataFrame:
+    """Fetch historical OHLCV data for a ticker using yfinance.
+
+    Parameters
+    ----------
+    ticker : str
+        Ticker symbol to fetch. Defaults to module-level TICKER.
+    start : str
+        Start date (YYYY-MM-DD).
+    end : str | None
+        Optional end date.
+
+    Returns
+    -------
+    pd.DataFrame
+        OHLCV history with DatetimeIndex.
+    """
     return yf.Ticker(ticker).history(start=start, end=end, auto_adjust=False)
 
 def calculate_sma(df: pd.DataFrame, window=DEFAULT_SMA_WINDOW) -> pd.Series:
+    """Calculate a simple moving average (SMA) of the Close price.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Dataframe that contains a "Close" column.
+    window : int
+        Rolling window size in trading days.
+
+    Returns
+    -------
+    pd.Series
+        SMA values aligned with the input index.
+    """
     return df["Close"].rolling(window=window).mean()
 
 # Upward and Downward Runs
 def compute_runs(close_values: np.ndarray):
     """Return up_runs, down_runs as list[{'start': i, 'length': k}] (k = steps)."""
+    """Compute contiguous runs of increasing or decreasing close prices.
+
+    Parameters
+    ----------
+    close_values : np.ndarray
+        1-D array of close prices.
+
+    Returns
+    -------
+    tuple[list[dict], list[dict]]
+        Two lists describing up runs and down runs. Each run is a dict with
+        keys 'start' (index of first day in run) and 'length' (number of steps).
+    """
     up_runs, down_runs = [], []
     cur_len, cur_dir, start_idx = 0, None, 0
     for i in range(1, len(close_values)):
@@ -62,6 +115,24 @@ def compute_runs(close_values: np.ndarray):
 
 # Plotting SMA
 def plot_sma(df_year: pd.DataFrame, ticker=TICKER, window=DEFAULT_SMA_WINDOW, outdir=Path("static")):
+    """Plot Close price and SMA for a single year and save to a file.
+
+    Parameters
+    ----------
+    df_year : pd.DataFrame
+        Data containing rows for a single year (DatetimeIndex expected).
+    ticker : str
+        Symbol for titles and filenames.
+    window : int
+        SMA window in days.
+    outdir : Path
+        Directory where the resulting PNG will be saved.
+
+    Returns
+    -------
+    Path
+        Path to the saved PNG file.
+    """
     outdir.mkdir(parents=True, exist_ok=True)
     sma = calculate_sma(df_year, window)
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -82,6 +153,25 @@ def plot_sma(df_year: pd.DataFrame, ticker=TICKER, window=DEFAULT_SMA_WINDOW, ou
 
 # Plotting Runs
 def plot_runs(df_year: pd.DataFrame, ticker=TICKER, outdir=Path("static")):
+    """Plot daily close prices with visual emphasis on up/down runs.
+
+    The function highlights the longest consecutive up and down runs and saves
+    the figure as a PNG in the given output directory.
+
+    Parameters
+    ----------
+    df_year : pd.DataFrame
+        Data for a single year (DatetimeIndex expected).
+    ticker : str
+        Symbol used for titles and filenames.
+    outdir : Path
+        Directory to save the PNG.
+
+    Returns
+    -------
+    Path
+        Path to the saved PNG file.
+    """
     outdir.mkdir(parents=True, exist_ok=True)
     close = df_year["Close"].to_numpy()
     up_runs, down_runs = compute_runs(close)
