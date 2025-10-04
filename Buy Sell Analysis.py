@@ -100,7 +100,36 @@ def print_streak_summary(up: list, down: list, details: list) -> None:
     if down:
         print(f"Longest down streak: {max(down)} days | Avg: {np.mean(down):.2f}")
 
+def get_runs_analysis(ticker="SPY", start_year=2023, end_year=2025):
+    """
+    Function to get upward/downward runs analysis that can be called from Flask app.
+    Returns: dict with runs analysis data or None if unavailable
+    """
+    try:
+        tk = yf.Ticker(ticker)
+        df = tk.history(period="max")
+        df = df[(df.index.year >= start_year) & (df.index.year <= end_year)]
+        if df.empty:
+            return None
 
+        # Calculate streaks
+        up, down, details = calculate_streaks(df["Close"].values, df)
+        
+        return {
+            "ticker": ticker,
+            "start_year": start_year,
+            "end_year": end_year,
+            "total_trading_days": len(df),
+            "upward_streaks": len(up),
+            "downward_streaks": len(down),
+            "longest_up_streak": max(up) if up else 0,
+            "longest_down_streak": max(down) if down else 0,
+            "avg_up_streak": round(np.mean(up), 2) if up else 0,
+            "avg_down_streak": round(np.mean(down), 2) if down else 0
+        }
+    except Exception:
+        return None
+    
 # -------------------------------------------------------------------
 # RECOMMENDATION ENGINE
 # -------------------------------------------------------------------
