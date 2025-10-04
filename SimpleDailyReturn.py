@@ -1,53 +1,23 @@
 #!/usr/bin/env python3
 # SimpleDailyReturn.py
-'''Utility to fetch historical price data and compute simple daily returns.
+"""
+Fetch historical prices and compute simple daily returns.
+Supports both CLI (multi-ticker) and Flask integration.
+"""
 
-This module provides:
-- get_data: fetches OHLCV data for a ticker using yfinance.
-- compute_daily_returns: compares pandas pct_change with manual numpy calculation.
-- main: simple CLI to query tickers and print returns for a specified date.
-
-Dependencies: numpy, pandas, yfinance
-'''
 import numpy as np
 import pandas as pd
 import yfinance as yf
 from datetime import datetime
 
+
 def get_data(ticker: str, start="2023-01-01", end=None) -> pd.DataFrame:
-    """Fetch historical market data for a ticker from Yahoo Finance.
-
-    Parameters
-    ----------
-    ticker : str
-        Stock/ETF symbol, e.g. "SPY" or "AAPL".
-    start : str
-        Start date in "YYYY-MM-DD" format. Defaults to "2023-01-01".
-    end : str | None
-        End date in "YYYY-MM-DD" format. If None, fetches up through latest available.
-
-    Returns
-    -------
-    pd.DataFrame
-        OHLCV history with a DatetimeIndex (timezone-aware).
-    """
+    """Return OHLCV history for a ticker (yfinance)."""
     return yf.Ticker(ticker).history(start=start, end=end, auto_adjust=False)
 
+
 def compute_daily_returns(df: pd.DataFrame):
-    """Compute daily simple returns two ways: pandas' pct_change and a manual numpy method.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Dataframe containing at least a "Close" column.
-
-    Returns
-    -------
-    tuple[pd.Series, np.ndarray]
-        (builtin_returns, manual_returns) where builtin_returns is the pandas
-        percent-change Series and manual_returns is a numpy array of the same
-        length (first element is NaN).
-    """
+    """Return (pandas_pct_change, manual_numpy_array) of Close returns."""
     builtin = df["Close"].pct_change()
     pt = df["Close"].to_numpy()
     manual = np.full_like(pt, np.nan, dtype=float)
@@ -55,13 +25,55 @@ def compute_daily_returns(df: pd.DataFrame):
         manual[1:] = (pt[1:] - pt[:-1]) / pt[:-1]
     return builtin, manual
 
-def main():
-    """Command line entrypoint.
 
-    Interactively asks the user for ticker symbols and a date, fetches data,
-    computes daily returns, and prints the close price and returns for the
-    requested date. Intended for quick local use and demonstrations.
-    """
+def get_daily_return_analysis(tickers="SPY", target_dates=None, start="2023-01-01", end=None):
+    """Flask-ready: return list of dicts with close price and daily returns."""
+    results = []
+    try:
+        # Normalize inputs
+        if isinstance(tickers, str):
+            tickers = [tickers]
+        if isinstance(target_dates, str):
+            target_dates = [target_dates]
+
+        if not tickers or not target_dates:
+            return results
+
+        for ticker in tickers:
+            df = get_data(ticker=ticker, start=start, end=end)
+            if df.empty:
+                continue
+
+            builtin, manual = compute_daily_returns(df)
+            df["BuiltinReturn"] = builtin * 100
+            df["ManualReturn"] = manual * 100
+            df.index = df.index.date
+
+            for target_date in target_dates:
+                try:
+                    user_date = datetime.strptime(target_date, "%Y-%m-%d").date()
+                except ValueError:
+                    continue
+
+                if user_date not in df.index:
+                    continue
+
+                row = df.loc[user_date]
+                results.append({
+                    "ticker": ticker,
+                    "date": target_date,
+                    "close_price": round(float(row['Close']), 2),
+                    "builtin_return": round(float(row['BuiltinReturn']), 2),
+                    "manual_return": round(float(row['ManualReturn']), 2)
+                })
+    except Exception:
+        return []
+
+    return results
+
+
+def main():
+    """CLI: prompt for tickers and date, then print daily returns."""
     # Ask user to input tickers
     tickers_str = input("Enter ticker symbols separated by commas (e.g. SPY,AAPL,MSFT): ").strip()
     tickers = [t.strip().upper() for t in tickers_str.split(",") if t.strip()]
@@ -100,6 +112,7 @@ def main():
         print(f"Close Price: {row['Close']:.2f}")
         print(f"Daily Return (pandas): {row['BuiltinReturn']:.2f}%")
         print(f"Daily Return (manual): {row['ManualReturn']:.2f}%")
+
 
 if __name__ == "__main__":
     main()
