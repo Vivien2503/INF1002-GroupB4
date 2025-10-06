@@ -33,7 +33,7 @@ def get_sma_for_date(
         end = date.today().isoformat()
 
     # Download data
-    data = yf.download(ticker, start=start, end=end, progress=False)
+    data = yf.download(ticker, start=start, end=end, progress=False, auto_adjust=True)
     if data.empty:
         print("No data found for the given parameters.")
         return None
@@ -50,7 +50,7 @@ def get_sma_for_date(
                 print(f"No trading data available on or before {target_date}.")
                 return None
             else:
-                sma_value = float(data.loc[prev_idx, 'SMA'])
+                sma_value = float(data.loc[prev_idx, 'SMA'].iloc[0])
                 print(f"\nRequested {target_date} (non-trading). Nearest trading day: {prev_idx.date()}")
                 print(f"SMA on {prev_idx.date()} ({period}-day): {sma_value:.2f}")
                 return sma_value
@@ -58,7 +58,7 @@ def get_sma_for_date(
             print(f"No trading data for {target_date}.")
             return None
     else:
-        sma_value = float(data.loc[idx, 'SMA'])
+        sma_value = float(data.loc[idx, 'SMA'].iloc[0])
         print(f"\nSMA on {target_date} ({period}-day): {sma_value:.2f}")
         return sma_value
 
