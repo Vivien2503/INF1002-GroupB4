@@ -1,0 +1,22 @@
+body {
+    text-align: center;
+}
+
+.button-box {
+    border: none;
+    color: black;
+    padding: 15px 32px;
+    text-align: center;
+    font-size: 16px;
+    margin: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.red { background-color: #f44336; }
+.blue { background-color: #2196F3; }
+.orange { background-color: #ff9800; }
+.green { background-color: #4CAF50; }
+
+.button-box:hover { opacity: 0.8; }
