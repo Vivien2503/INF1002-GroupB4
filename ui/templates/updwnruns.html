@@ -6,10 +6,9 @@
         <h1>Interactive Stock Analysis</h1>
         <form action="/updwnruns2" method="POST">
             <p>Stock Ticker: <input type="text" name="ticker" value="SPY" required></p>
-            <p>Start Year: <input type="number" name="start_year" value="2023" min="1900" max="2030" required></p>
-            <p>End Year: <input type="number" name="end_year" value="2025" min="1900" max="2030" required></p>
             <p>Analysis Date: <input type="date" name="analysis_date" required></p>
             <p>Target Currency: <input type="text" name="target_currency" value="USD" placeholder="e.g. EUR, SGD, USD" required></p>
+            <p><small>Analysis will use 3 years of historical data ending at the analysis year.</small></p>
             <button type="submit">Run Analysis</button>
         </form>
         <p><a href="/">← Back to main page</a></p>

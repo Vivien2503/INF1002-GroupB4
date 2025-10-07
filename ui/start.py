@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 import os
 
@@ -38,110 +38,69 @@ except Exception as e:
     
 app = Flask(__name__)
 
+# Helper function for common date formatting
+def get_today():
+    return datetime.now().strftime('%Y-%m-%d')
+
+# Helper function for error responses
+def error_response(message):
+    return f"<h2>Error: {message}</h2>"
+
 @app.route('/')
 def index():
-    return '''
-    <html>
-    <head>
-    <style>
-    body {
-    text-align: center;
-    }
-    
-    .button-box {
-        border: none;
-        color: black;
-        padding: 15px 32px;
-        text-align: center;
-        font-size: 16px;
-        margin: 10px;
-        cursor: pointer;
-        border-radius: 8px;
-        display: inline-block;
-    }
-    
-    .red { background-color: #f44336; }
-    .blue { background-color: #2196F3; }
-    .orange { background-color: #ff9800; }
-    .green { background-color: #4CAF50; }
-
-    .button-box:hover { opacity: 0.8; }
-    </style>
-    </head>
-    <body>
-        <h1>Hello! Welcome to the Stock Market Analyst For the SPDR S&P 500 ETF (SPY)</h1>
-        <p style="font-size: 24px;">Choose one of the following functions:</p>
-        
-        <div> 
-            <form action="/sma" method="GET" style="display: inline;">
-                <button type="submit" class="button-box red">Simple Moving Average<br>Calculation</button>
-            </form>
-            
-            <form action="/updwnruns" method="GET" style="display: inline;">
-                <button type="submit" class="button-box blue">Interactive Stock<br>Analysis</button>
-            </form>
-            
-            <form action="/dailyreturncalc" method="GET" style="display: inline;">
-                <button type="submit" class="button-box orange">Daily Returns<br>Calculation</button>
-            </form>
-            
-            <form action="/maxprofcalc" method="GET" style="display: inline;">
-                <button type="submit" class="button-box green">Maximum Profit<br>Calculation</button>
-            </form>
-        </div>
-    </body>
-    </html>
-    '''
+    return render_template('index.html')
 
 @app.route('/sma')
 def sma_page():
-    today = datetime.now().strftime('%Y-%m-%d')
-    return render_template('sma.html', max_date=today)
+    return render_template('sma.html', max_date=get_today())
 
 @app.route('/updwnruns')
 def about_page():
-    today = datetime.now().strftime('%Y-%m-%d')
-    return render_template('updwnruns.html', max_date=today)   
+    return render_template('updwnruns.html', max_date=get_today())   
 
 @app.route('/dailyreturncalc')
 def contact_page():
-    today = datetime.now().strftime('%Y-%m-%d')
-    return render_template('dailyreturncalc.html', max_date=today)
+    return render_template('dailyreturncalc.html', max_date=get_today())
 
 @app.route('/maxprofcalc')
 def services_page():
-    today = datetime.now().strftime('%Y-%m-%d')
-    return render_template('maxprofcalc.html', max_date=today)
+    return render_template('maxprofcalc.html', max_date=get_today())
 
 @app.route('/sma2', methods=['POST'])
 def sma2():
-    start_date_raw = request.form['start_date']
     end_date_raw = request.form['end_date']
     sma_period = request.form.get('sma_period', 30)
+    ticker = request.form.get('ticker', 'SPY').upper().strip()
     
     try:
-        # Convert dates and SMA period
-        start = datetime.strptime(start_date_raw, "%Y-%m-%d").date()
+        # Validate ticker input
+        if not ticker:
+            return error_response("Please enter a ticker symbol.")
+        
+        # convert the end date from string to date object
         end = datetime.strptime(end_date_raw, "%Y-%m-%d").date()
         sma_period = int(sma_period)
         
-        # Validate inputs
         if sma_period < 1:
-            return "<h2>Error: SMA period must be at least 1 day.</h2>"
-        if start > end:
-            return "<h2>Error: Start date must be before end date.</h2>"
+            return error_response("SMA period must be at least 1 day.")
         
-        # Format dates for display
-        start_date = start.strftime("%d-%m-%Y")
+        # Automatically calculate start date with sufficient buffer
+        # Use enough days to ensure we have sufficient trading data
+        # Rule of thumb: SMA period * 1.5 + 30 days buffer
+        buffer_days = max(60, int(sma_period * 1.5) + 30)
+        calculated_start = end - timedelta(days=buffer_days)
+        start_date_raw = calculated_start.strftime("%Y-%m-%d")
+        
+        # Format end date for display
         end_date = end.strftime("%d-%m-%Y")
         
-        # Check if profit_and_sma.py is available
+        # checks if profit_and_sma.py is available
         if not HAS_PROFIT_SMA:
-            return "<h2>Error: profit_and_sma.py module is required but not available.</h2>"
+            return error_response("profit_and_sma.py module is required but not available.")
         
-        # Use profit_and_sma.py function to get SMA
+        # use profit_and_sma.py function to get SMA
         sma_result = get_sma_for_date(
-            ticker="SPY",
+            ticker=ticker,
             start=start_date_raw,
             end=end_date_raw,
             period=sma_period,
@@ -150,20 +109,20 @@ def sma2():
         )
         
         if sma_result is None:
-            return "<h2>No SMA data available for the selected parameters.</h2>"
+            return error_response(f"No SMA data available for {ticker} with the selected parameters. Please check if the ticker symbol is valid and data is available for the selected date range.")
 
         return render_template(
             'sma2.html',
-            start_date=start_date,
+            ticker=ticker,
             end_date=end_date,
             period=sma_period,
             sma_value=round(sma_result, 2)
         )
 
     except ValueError as e:
-        return f"<h2>Error: Invalid input - {str(e)}. Please check your dates and SMA period.</h2>"
+        return error_response(f"Invalid input - {str(e)}. Please check your date and SMA period.")
     except Exception as e:
-        return f"<h2>Error: {str(e)}. Please try different dates.</h2>"
+        return error_response(f"{str(e)}. Please try a different date or check if the ticker symbol '{ticker}' is valid.")
 
 @app.route('/maxprofcalc2', methods=['POST'])
 def maxprofcalc2():
@@ -172,23 +131,20 @@ def maxprofcalc2():
     ticker = request.form.get('ticker', 'SPY').strip().upper()
     
     try:
-        # Convert dates
         start = datetime.strptime(start_date_raw, "%Y-%m-%d").date()
         end = datetime.strptime(end_date_raw, "%Y-%m-%d").date()
         
-        # Validate inputs
         if start > end:
             return "<h2>Error: Start date must be before end date.</h2>"
         
-        # Format dates for display
         start_date = start.strftime("%d-%m-%Y")
         end_date = end.strftime("%d-%m-%Y")
         
-        # Check if profit_and_sma.py is available
+        # checks if profit_and_sma.py is available
         if not HAS_PROFIT_SMA:
             return "<h2>Error: profit_and_sma.py module is required but not available.</h2>"
         
-        # Use profit_and_sma.py function to get max profit analysis
+        # uses profit_and_sma.py function to get max profit analysis
         result = get_max_profit_analysis(
             ticker=ticker,
             start=start_date_raw,
@@ -219,17 +175,15 @@ def dailyreturncalc2():
     ticker = request.form.get('ticker', 'SPY').strip().upper()
     
     try:
-        # Convert date
         target_date = datetime.strptime(target_date_raw, "%Y-%m-%d").date()
         
-        # Format date for display
         date_display = target_date.strftime("%d-%m-%Y")
         
-        # Check if SimpleDailyReturn.py is available
+        # checks if SimpleDailyReturn.py is available
         if not HAS_DAILY_RETURN:
             return "<h2>Error: SimpleDailyReturn.py module is required but not available.</h2>"
         
-        # Use SimpleDailyReturn.py function to get daily return analysis
+        # uses SimpleDailyReturn.py function to get daily return analysis
         result = get_daily_return_analysis(
             ticker=ticker,
             target_date=target_date_raw
@@ -255,24 +209,23 @@ def dailyreturncalc2():
 @app.route('/updwnruns2', methods=['POST'])
 def updwnruns2():
     ticker = request.form.get('ticker', 'SPY').strip().upper()
-    start_year = int(request.form.get('start_year', 2023))
-    end_year = int(request.form.get('end_year', 2025))
     analysis_date = request.form.get('analysis_date', '').strip()
     target_currency = request.form.get('target_currency', 'USD').strip().upper()
     
     try:
-        # Validate inputs
-        if start_year > end_year:
-            return "<h2>Error: Start year must be before or equal to end year.</h2>"
-        
         if not analysis_date:
             return "<h2>Error: Analysis date is required.</h2>"
         
-        # Check if Buy Sell Analysis.py is available
+        # Automatically calculate start and end years from analysis date
+        analysis_year = datetime.strptime(analysis_date, "%Y-%m-%d").year
+        start_year = analysis_year - 2  # 3 years of historical data
+        end_year = analysis_year
+        
+        # checks if Buy Sell Analysis.py is available
         if not HAS_RUNS_ANALYSIS:
             return "<h2>Error: Buy Sell Analysis.py module is required but not available.</h2>"
         
-        # Use Buy Sell Analysis.py function to get comprehensive analysis
+        # use Buy Sell Analysis.py function to get comprehensive analysis
         result = get_analysis_for_flask(
             ticker=ticker,
             start_year=start_year,
@@ -282,7 +235,7 @@ def updwnruns2():
         )
         
         if result is None:
-            return f"<h2>No data available for {ticker} between {start_year}-{end_year}.</h2>"
+            return f"<h2>No data available for {ticker} for the analysis period.</h2>"
 
         return render_template(
             'updwnruns2.html',

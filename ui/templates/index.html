@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Market Trend Analysis Tool</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Hello! Welcome to the Stock Market Trend Analysis Tool!</h1>
+    <p style="font-size: 24px;">Choose one of the following functions:</p>
+    
+    <div> 
+        <form action="/sma" method="GET" style="display: inline;">
+            <button type="submit" class="button-box red">Simple Moving Average<br>Calculation</button>
+        </form>
+        
+        <form action="/updwnruns" method="GET" style="display: inline;">
+            <button type="submit" class="button-box blue">Interactive Stock<br>Analysis</button>
+        </form>
+        
+        <form action="/dailyreturncalc" method="GET" style="display: inline;">
+            <button type="submit" class="button-box orange">Daily Returns<br>Calculation</button>
+        </form>
+        
+        <form action="/maxprofcalc" method="GET" style="display: inline;">
+            <button type="submit" class="button-box green">Maximum Profit<br>Calculation</button>
+        </form>
+    </div>
+</body>
+</html>

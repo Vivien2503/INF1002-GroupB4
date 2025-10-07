@@ -7,8 +7,8 @@
     <h1>Simple Moving Average Calculator</h1>
     
     <form action="/sma2" method="POST">
-        <p>Start Date: <input type="date" name="start_date" min="2023-01-01" max="{{max_date}}" required></p>
-        <p>End Date: <input type="date" name="end_date" min="2023-01-01" max="{{max_date}}" required></p>
+        <p>Ticker Symbol: <input type="text" name="ticker" value="SPY" placeholder="e.g., SPY, AAPL, MSFT" required></p>
+        <p>Input Date: <input type="date" name="end_date" min="2023-01-01" max="{{max_date}}" required></p>
         <p>SMA Period: <input type="number" name="sma_period" value="30" min="1" required> days</p>
         <p><button type="submit">Calculate SMA</button></p>
     </form>
