@@ -84,6 +84,9 @@ if __name__ == "__main__":
 # Max Profit Calculation part ***
 
 def max_profit_multiple(prices):
+    """
+    Calculate max profit with multiple buy/sell transactions allowed.
+    """
     profit = 0.0
     for i in range(1, len(prices)):
         g = prices[i] - prices[i - 1]
@@ -92,6 +95,9 @@ def max_profit_multiple(prices):
     return float(profit)
 
 def extract_trades(prices):
+    """
+    Return (buy_index, sell_index) pairs for all profitable trades.
+    """
     trades, i, n = [], 0, len(prices)
     while i < n - 1:
         while i < n - 1 and prices[i + 1] <= prices[i]: i += 1
