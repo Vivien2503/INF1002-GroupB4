@@ -1,3 +1,8 @@
+"""
+Simple Moving Average (SMA) Module
+Calculates and retrieves SMA values for stock data on specific dates.
+"""
+
 import yfinance as yf
 import pandas as pd
 import os
@@ -9,25 +14,12 @@ def get_sma_for_date(
     end=None,
     period=30,
     target_date=None,
-    snap_to_previous=True,  # snap non-trading days to the nearest previous trading day
+    snap_to_previous=True, 
     save_to_csv=False,
     csv_filename="sma_values.csv"
 ):
     """
-    Computes SMA and prints the SMA value for a specific date.
-
-    Parameters:
-    ticker (str): Stock/ETF symbol (default = 'SPY')
-    start (str): Start date for data (YYYY-MM-DD)
-    end (str): End date for data (YYYY-MM-DD). Defaults to today if None.
-    period (int): SMA window length (default = 30 days)
-    target_date (str): Date (YYYY-MM-DD) to show SMA for
-    snap_to_previous (bool): If True, use previous trading day if target_date not available
-    save_to_csv (bool): If True, saves SMA values to a CSV file
-    csv_filename (str): Name of CSV file if saving
-
-    Returns:
-    float: SMA value for the date (or None if unavailable)
+    Compute SMA and print the SMA value for a specific date.
     """
     if end is None:
         end = date.today().isoformat()
@@ -82,6 +74,11 @@ if __name__ == "__main__":
     )
 
 # Max Profit Calculation part ***
+
+"""
+Maximum Profit Calculation Module
+Implements Best Time to Buy and Sell Stock II algorithm for multiple transactions.
+"""
 
 def max_profit_multiple(prices):
     """
