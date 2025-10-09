@@ -223,7 +223,7 @@ def main():
     # Fetch data for the chosen ticker and start
     df = get_data(ticker=user_ticker, start=user_start)
     if df.empty:
-        print(f"No data returned for ticker {user_ticker}.")
+        print(f"No data returned for ticker {user_ticker}. Please enter valid ticker and try again.")
         raise SystemExit(2)
 
     for yr in range(start_ts.year, current_year + 1):
