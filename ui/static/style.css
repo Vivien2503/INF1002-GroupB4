@@ -1,0 +1,34 @@
+/*
+    Components:
+    - body: Page layout and centering
+    - .button-box: Main navigation button styling
+    - Color classes: red, blue, orange, green for different tools
+    - Hover effects: Opacity changes on mouse over
+*/
+
+/* Page layout - center all content */
+body {
+    text-align: center;
+}
+
+/* Main navigation button styling */
+.button-box {
+    border: none;
+    color: black;
+    padding: 15px 32px;
+    text-align: center;
+    font-size: 16px;
+    margin: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+/* Button color schemes for different analysis tools */
+.red { background-color: #f44336; }    /* Simple Moving Average */
+.blue { background-color: #2196F3; }   /* Interactive Stock Analysis */
+.orange { background-color: #ff9800; } /* Daily Returns */
+.green { background-color: #4CAF50; }  /* Maximum Profit */
+
+/* Hover effect for all buttons */
+.button-box:hover { opacity: 0.8; }
