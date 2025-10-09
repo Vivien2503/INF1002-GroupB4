@@ -30,9 +30,8 @@ import os
 try:
     # Add parent directory to Python path to import profit_and_sma.py
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from profit_and_sma import get_sma_for_date, get_max_profit_analysis
+    from SMA_and_MaxProfit import get_sma_for_date, get_max_profit_analysis
     HAS_PROFIT_SMA = True
-    print("Successfully imported profit_and_sma.py functions")
 except ImportError as e:
     HAS_PROFIT_SMA = False
     print(f"Warning: Could not import profit_and_sma.py - {e}")
@@ -41,7 +40,6 @@ except ImportError as e:
 try:
     from SimpleDailyReturn import get_daily_return_analysis
     HAS_DAILY_RETURN = True
-    print("Successfully imported SimpleDailyReturn.py functions")
 except ImportError as e:
     HAS_DAILY_RETURN = False
     print(f"Warning: Could not import SimpleDailyReturn.py - {e}")
@@ -54,7 +52,6 @@ try:
     spec.loader.exec_module(buy_sell_module)
     get_analysis_for_flask = buy_sell_module.get_analysis_for_flask
     HAS_RUNS_ANALYSIS = True
-    print("Successfully imported Buy Sell Analysis.py functions")
 except Exception as e:
     HAS_RUNS_ANALYSIS = False
     print(f"Warning: Could not import Buy Sell Analysis.py - {e}")
@@ -64,33 +61,21 @@ app = Flask(__name__)
 # Helper function for common date formatting
 def get_today():
     """
-    Get current date in YYYY-MM-DD format for HTML date inputs
-    
-    Returns:
-        str: Current date formatted as YYYY-MM-DD
+    Get current date in YYYY-MM-DD format for date inputs
     """
     return datetime.now().strftime('%Y-%m-%d')
 
 # Helper function for error responses
 def error_response(message):
     """
-    Create standardized error response HTML
-    
-    Args:
-        message (str): Error message to display
-        
-    Returns:
-        str: Formatted HTML error message
+    Create a standardized error response
     """
     return f"<h2>Error: {message}</h2>"
 
 @app.route('/')
 def index():
     """
-    Main page route displaying navigation buttons for all analysis tools
-    
-    Returns:
-        str: Rendered index.html template with navigation buttons
+    Main page displaying navigation buttons for all analysis tools
     """
     return render_template('index.html')
 
@@ -98,48 +83,33 @@ def index():
 def sma_page():
     """
     Simple Moving Average input form page
-    
-    Returns:
-        str: Rendered sma.html template with current date
     """
     return render_template('sma.html', max_date=get_today())
 
 @app.route('/updwnruns')
-def about_page():
+def updwnruns_page():
     """
     Interactive Stock Analysis input form page
-    
-    This route displays the input form for up/down runs analysis.
+    This displays the input form for up/down runs analysis.
     Users can analyze stock price movement patterns and streaks.
-    
-    Returns:
-        str: Rendered updwnruns.html template with current date
     """
     return render_template('updwnruns.html', max_date=get_today())   
 
 @app.route('/dailyreturncalc')
-def contact_page():
+def dailyreturncalc_page():
     """
     Daily Returns Calculator input form page
-    
-    This route displays the input form for daily return calculations.
-    Users can calculate daily return percentages for specific stocks and dates.
-    
-    Returns:
-        str: Rendered dailyreturncalc.html template with current date
+    This displays the input form for daily return calculations.
+    Users can calculate daily return percentages for specific stocks and time periods.
     """
     return render_template('dailyreturncalc.html', max_date=get_today())
 
 @app.route('/maxprofcalc')
-def services_page():
+def maxprofcalc_page():
     """
     Maximum Profit Calculator input form page
-    
-    This route displays the input form for maximum profit analysis.
+    This displays the input form for maximum profit analysis.
     Users can analyze potential profits from optimal buy/sell timing.
-    
-    Returns:
-        str: Rendered maxprofcalc.html template with current date
     """
     return render_template('maxprofcalc.html', max_date=get_today())
 
@@ -147,17 +117,8 @@ def services_page():
 def sma2():
     """
     Simple Moving Average calculation results page
-    
-    This route processes SMA calculation requests and displays results.
-    Handles form data validation, date processing, and SMA computation.
-    
-    Form Data:
-        end_date: Target date for SMA calculation (YYYY-MM-DD)
-        sma_period: Number of days for moving average (integer)
-        ticker: Stock ticker symbol (string)
-    
-    Returns:
-        str: Rendered sma2.html with results or error message
+    This processes SMA calculation requests and displays results.
+    Handles form data, date processing, and SMA computation.
     """
     end_date_raw = request.form['end_date']
     sma_period = request.form.get('sma_period', 30)
@@ -219,17 +180,8 @@ def sma2():
 def maxprofcalc2():
     """
     Maximum Profit calculation results page
-    
-    This route processes maximum profit analysis requests and displays results.
+    This processes maximum profit analysis requests and displays results.
     Analyzes optimal buy/sell opportunities within a date range.
-    
-    Form Data:
-        start_date: Analysis start date (YYYY-MM-DD)
-        end_date: Analysis end date (YYYY-MM-DD)
-        ticker: Stock ticker symbol (string)
-    
-    Returns:
-        str: Rendered maxprofcalc2.html with results or error message
     """
     start_date_raw = request.form['start_date']
     end_date_raw = request.form['end_date']
@@ -240,14 +192,11 @@ def maxprofcalc2():
         end = datetime.strptime(end_date_raw, "%Y-%m-%d").date()
         
         if start > end:
-            return "<h2>Error: Start date must be before end date.</h2>"
-        
-        start_date = start.strftime("%d-%m-%Y")
-        end_date = end.strftime("%d-%m-%Y")
+            return error_response("Start date must be before end date.")
         
         # checks if profit_and_sma.py is available
         if not HAS_PROFIT_SMA:
-            return "<h2>Error: profit_and_sma.py module is required but not available.</h2>"
+            return error_response("profit_and_sma.py module is required but not available.")
         
         # uses profit_and_sma.py function to get max profit analysis
         result = get_max_profit_analysis(
@@ -257,12 +206,12 @@ def maxprofcalc2():
         )
         
         if result is None:
-            return f"<h2>No data available for {ticker} in the selected date range.</h2>"
+            return error_response(f"No data available for {ticker} in the selected date range.")
 
         return render_template(
             'maxprofcalc2.html',
-            start_date=start_date,
-            end_date=end_date,
+            start_date=start.strftime("%d-%m-%Y"),
+            end_date=end.strftime("%d-%m-%Y"),
             ticker=result['ticker'],
             max_profit=result['max_profit'],
             num_trades=result['num_trades'],
@@ -270,24 +219,16 @@ def maxprofcalc2():
         )
 
     except ValueError as e:
-        return f"<h2>Error: Invalid input - {str(e)}. Please check your dates.</h2>"
+        return error_response(f"Invalid input - {str(e)}. Please check your dates.")
     except Exception as e:
-        return f"<h2>Error: {str(e)}. Please try different parameters.</h2>"
+        return error_response(f"{str(e)}. Please try different parameters.")
 
 @app.route('/dailyreturncalc2', methods=['POST'])
 def dailyreturncalc2():
     """
     Daily Returns calculation results page
-    
-    This route processes daily return calculation requests and displays results.
+    This processes daily return calculation requests and displays results.
     Calculates both built-in and manual daily return percentages.
-    
-    Form Data:
-        target_date: Date for return calculation (YYYY-MM-DD)
-        ticker: Stock ticker symbol (string)
-    
-    Returns:
-        str: Rendered dailyreturncalc2.html with results or error message
     """
     target_date_raw = request.form['target_date']
     ticker = request.form.get('ticker', 'SPY').strip().upper()
@@ -295,50 +236,41 @@ def dailyreturncalc2():
     try:
         target_date = datetime.strptime(target_date_raw, "%Y-%m-%d").date()
         
-        date_display = target_date.strftime("%d-%m-%Y")
-        
         # checks if SimpleDailyReturn.py is available
         if not HAS_DAILY_RETURN:
-            return "<h2>Error: SimpleDailyReturn.py module is required but not available.</h2>"
+            return error_response("SimpleDailyReturn.py module is required but not available.")
         
-        # uses SimpleDailyReturn.py function to get daily return analysis
+        # uses SimpleDailyReturn.py function with correct parameter names
         result = get_daily_return_analysis(
-            ticker=ticker,
-            target_date=target_date_raw
+            tickers=ticker,
+            target_dates=target_date_raw
         )
         
-        if result is None:
-            return f"<h2>No trading data for {ticker} on {date_display} (market closed or holiday).</h2>"
+        if not result or len(result) == 0:
+            return error_response(f"No trading data for {ticker} on {target_date.strftime('%d-%m-%Y')} (market closed or holiday).")
 
+        # Extract first result for template
+        data = result[0]
         return render_template(
             'dailyreturncalc2.html',
-            date=date_display,
-            ticker=result['ticker'],
-            close_price=result['close_price'],
-            builtin_return=result['builtin_return'],
-            manual_return=result['manual_return']
+            date=target_date.strftime("%d-%m-%Y"),
+            ticker=data['ticker'],
+            close_price=data['close_price'],
+            builtin_return=data['builtin_return'],
+            manual_return=data['manual_return']
         )
 
     except ValueError as e:
-        return f"<h2>Error: Invalid date format - {str(e)}. Please use YYYY-MM-DD.</h2>"
+        return error_response(f"Invalid date format - {str(e)}. Please use YYYY-MM-DD.")
     except Exception as e:
-        return f"<h2>Error: {str(e)}. Please try different parameters.</h2>"
+        return error_response(f"{str(e)}. Please try different parameters.")
 
 @app.route('/updwnruns2', methods=['POST'])
 def updwnruns2():
     """
     Interactive Stock Analysis results page
-    
-    This route processes up/down runs analysis requests and displays results.
+    This processes up/down runs analysis requests and displays results.
     Analyzes stock price movement patterns, streaks, and currency conversion.
-    
-    Form Data:
-        ticker: Stock ticker symbol (string)
-        analysis_date: Date for analysis (YYYY-MM-DD)
-        target_currency: Currency for conversion (string)
-    
-    Returns:
-        str: Rendered updwnruns2.html with results or error message
     """
     ticker = request.form.get('ticker', 'SPY').strip().upper()
     analysis_date = request.form.get('analysis_date', '').strip()
@@ -346,7 +278,7 @@ def updwnruns2():
     
     try:
         if not analysis_date:
-            return "<h2>Error: Analysis date is required.</h2>"
+            return error_response("Analysis date is required.")
         
         # Automatically calculate start and end years from analysis date
         analysis_year = datetime.strptime(analysis_date, "%Y-%m-%d").year
@@ -355,7 +287,7 @@ def updwnruns2():
         
         # checks if Buy Sell Analysis.py is available
         if not HAS_RUNS_ANALYSIS:
-            return "<h2>Error: Buy Sell Analysis.py module is required but not available.</h2>"
+            return error_response("Buy Sell Analysis.py module is required but not available.")
         
         # use Buy Sell Analysis.py function to get comprehensive analysis
         result = get_analysis_for_flask(
@@ -367,7 +299,7 @@ def updwnruns2():
         )
         
         if result is None:
-            return f"<h2>No data available for {ticker} for the analysis period.</h2>"
+            return error_response(f"No data available for {ticker} for the analysis period.")
 
         return render_template(
             'updwnruns2.html',
@@ -375,9 +307,9 @@ def updwnruns2():
         )
 
     except ValueError as e:
-        return f"<h2>Error: Invalid input - {str(e)}. Please check your parameters.</h2>"
+        return error_response(f"Invalid input - {str(e)}. Please check your parameters.")
     except Exception as e:
-        return f"<h2>Error: {str(e)}. Please try different parameters.</h2>"
+        return error_response(f"{str(e)}. Please try different parameters.")
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=True, use_reloader=False)
