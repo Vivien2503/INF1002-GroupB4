@@ -1,22 +1,20 @@
 <!--
-    file: maxprofcalc.html
-    purpose: user interface for calculating maximum profit opportunities
+    User interface for calculating maximum profit opportunities
     
-    description:
-    input form for maximum profit calculation allowing users to:
+    Description:
+    Input form for maximum profit calculation allowing users to:
     - select date range for analysis
     - enter stock ticker symbol
     - find optimal buy/sell dates for maximum profit
     
-    form fields:
+    Form fields:
     - start_date: beginning of analysis period with constraints
     - end_date: end of analysis period with constraints
     - ticker: stock symbol input (default: spy)
     
-    dependencies:
+    Dependencies:
     - flask route: /maxprofcalc2 (post method)
     - backend function: get_max_profit_analysis() from profit_and_sma.py
-    - template variable: max_date (current date from flask)
 -->
 <!DOCTYPE html>
 <html>

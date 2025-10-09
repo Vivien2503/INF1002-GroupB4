@@ -106,18 +106,59 @@ def sma_page():
 
 @app.route('/updwnruns')
 def about_page():
+    """
+    Interactive Stock Analysis input form page
+    
+    This route displays the input form for up/down runs analysis.
+    Users can analyze stock price movement patterns and streaks.
+    
+    Returns:
+        str: Rendered updwnruns.html template with current date
+    """
     return render_template('updwnruns.html', max_date=get_today())   
 
 @app.route('/dailyreturncalc')
 def contact_page():
+    """
+    Daily Returns Calculator input form page
+    
+    This route displays the input form for daily return calculations.
+    Users can calculate daily return percentages for specific stocks and dates.
+    
+    Returns:
+        str: Rendered dailyreturncalc.html template with current date
+    """
     return render_template('dailyreturncalc.html', max_date=get_today())
 
 @app.route('/maxprofcalc')
 def services_page():
+    """
+    Maximum Profit Calculator input form page
+    
+    This route displays the input form for maximum profit analysis.
+    Users can analyze potential profits from optimal buy/sell timing.
+    
+    Returns:
+        str: Rendered maxprofcalc.html template with current date
+    """
     return render_template('maxprofcalc.html', max_date=get_today())
 
 @app.route('/sma2', methods=['POST'])
 def sma2():
+    """
+    Simple Moving Average calculation results page
+    
+    This route processes SMA calculation requests and displays results.
+    Handles form data validation, date processing, and SMA computation.
+    
+    Form Data:
+        end_date: Target date for SMA calculation (YYYY-MM-DD)
+        sma_period: Number of days for moving average (integer)
+        ticker: Stock ticker symbol (string)
+    
+    Returns:
+        str: Rendered sma2.html with results or error message
+    """
     end_date_raw = request.form['end_date']
     sma_period = request.form.get('sma_period', 30)
     ticker = request.form.get('ticker', 'SPY').upper().strip()
@@ -176,6 +217,20 @@ def sma2():
 
 @app.route('/maxprofcalc2', methods=['POST'])
 def maxprofcalc2():
+    """
+    Maximum Profit calculation results page
+    
+    This route processes maximum profit analysis requests and displays results.
+    Analyzes optimal buy/sell opportunities within a date range.
+    
+    Form Data:
+        start_date: Analysis start date (YYYY-MM-DD)
+        end_date: Analysis end date (YYYY-MM-DD)
+        ticker: Stock ticker symbol (string)
+    
+    Returns:
+        str: Rendered maxprofcalc2.html with results or error message
+    """
     start_date_raw = request.form['start_date']
     end_date_raw = request.form['end_date']
     ticker = request.form.get('ticker', 'SPY').strip().upper()
@@ -221,6 +276,19 @@ def maxprofcalc2():
 
 @app.route('/dailyreturncalc2', methods=['POST'])
 def dailyreturncalc2():
+    """
+    Daily Returns calculation results page
+    
+    This route processes daily return calculation requests and displays results.
+    Calculates both built-in and manual daily return percentages.
+    
+    Form Data:
+        target_date: Date for return calculation (YYYY-MM-DD)
+        ticker: Stock ticker symbol (string)
+    
+    Returns:
+        str: Rendered dailyreturncalc2.html with results or error message
+    """
     target_date_raw = request.form['target_date']
     ticker = request.form.get('ticker', 'SPY').strip().upper()
     
@@ -258,6 +326,20 @@ def dailyreturncalc2():
 
 @app.route('/updwnruns2', methods=['POST'])
 def updwnruns2():
+    """
+    Interactive Stock Analysis results page
+    
+    This route processes up/down runs analysis requests and displays results.
+    Analyzes stock price movement patterns, streaks, and currency conversion.
+    
+    Form Data:
+        ticker: Stock ticker symbol (string)
+        analysis_date: Date for analysis (YYYY-MM-DD)
+        target_currency: Currency for conversion (string)
+    
+    Returns:
+        str: Rendered updwnruns2.html with results or error message
+    """
     ticker = request.form.get('ticker', 'SPY').strip().upper()
     analysis_date = request.form.get('analysis_date', '').strip()
     target_currency = request.form.get('target_currency', 'USD').strip().upper()
@@ -298,5 +380,4 @@ def updwnruns2():
         return f"<h2>Error: {str(e)}. Please try different parameters.</h2>"
 
 if __name__ == '__main__':
-    os.environ['FLASK_ENV'] = 'development'
     app.run(host='127.0.0.1', port=5000, debug=True, use_reloader=False)

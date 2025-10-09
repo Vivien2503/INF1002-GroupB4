@@ -1,20 +1,19 @@
 <!--
-    file: updwnruns.html
-    purpose: user interface for up/down streak analysis and trading recommendations
+    User interface for up/down streak analysis and trading recommendations
 
-    description:
+    Description:
     input form for comprehensive stock analysis including:
     - upward/downward price streak detection
     - trading recommendations with currency conversion
     - automatically uses 3 years of historical data
     
-    form fields:
-    - ticker: stock symbol input (default: spy)
+    Form fields:
+    - ticker: stock symbol input
     - analysis_date: target date for analysis
-    - target_currency: currency for price conversion (default: usd)
+    - target_currency: currency for price conversion, default is usd
     
-    dependencies:
-    - flask route: /updwnruns2 (post method)
+    Dependencies:
+    - flask route: /updwnruns2
     - backend function: get_analysis_for_flask() from buy sell analysis.py
     - currency conversion api (frankfurter.app)
 -->

@@ -1,21 +1,19 @@
 <!--
-    file: dailyreturncalc.html
-    purpose: user interface for calculating daily stock returns
+    User interface for calculating daily stock returns
     
-    description:
-    input form for daily return calculation allowing users to:
+    Description:
+    Input form for daily return calculation allowing users to:
     - select target date for analysis
     - enter stock ticker symbol
     - submit to /dailyreturncalc2 route for processing
     
-    form fields:
+    Form fields:
     - target_date: specific date for return calculation with constraints
     - ticker: stock symbol input (default: spy)
     
-    dependencies:
+    Dependencies:
     - flask route: /dailyreturncalc2 (post method)
     - backend function: get_daily_return_analysis() from simpledailyreturn.py
-    - template variable: max_date (current date from flask)=
 -->
 <!DOCTYPE html>
 <html>

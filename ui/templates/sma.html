@@ -1,23 +1,20 @@
 <!--
-    File: sma.html
-    Purpose: User interface for calculating Simple Moving Averages
+    User interface for calculating Simple Moving Average
     
     Description:
     Input form for SMA calculation allowing users to:
-    - Enter stock ticker symbols (e.g., SPY, AAPL, MSFT)
-    - Select analysis date (automatically calculates sufficient historical data)
+    - Enter stock ticker symbols
+    - Select analysis date
     - Choose SMA period (number of days to average)
-    - Submit to /sma2 route for processing
     
     Form Fields:
     - ticker: Stock symbol input with placeholder examples
     - end_date: Target date for SMA calculation with date constraints
-    - sma_period: Number of days for moving average (default: 30, min: 1)
+    - sma_period: Number of days for moving average
     
     Dependencies:
     - Flask route: /sma2 (POST method)
     - Backend function: get_sma_for_date() from profit_and_sma.py
-    - Template variable: max_date (current date from Flask)
 -->
 <!DOCTYPE html>
 <html>
