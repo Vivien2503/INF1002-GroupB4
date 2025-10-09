@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# SimpleDailyReturn.py
 """
 Fetch historical prices and compute simple daily returns.
 Supports both CLI (multi-ticker) and Flask integration.
