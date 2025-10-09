@@ -12,8 +12,8 @@ The scripts use yfinance to fetch data and matplotlib for plotting.
 import matplotlib
 try:
     matplotlib.use("TkAgg")  
-except Exception:
-    pass
+except Exception as e:
+    print(f"Warning: Could not use TkAgg backend ({e})")
 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
