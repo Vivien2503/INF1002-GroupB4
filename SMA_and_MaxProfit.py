@@ -27,7 +27,7 @@ def get_sma_for_date(
     # Download data
     data = yf.download(ticker, start=start, end=end, progress=False, auto_adjust=True)
     if data.empty:
-        print("No data found for the given parameters.")
+        print("Please enter the correct ticker.")
         return None
 
     # Compute SMA
@@ -63,7 +63,13 @@ def get_sma_for_date(
 # Example usage
 if __name__ == "__main__":
     ticker = input("Enter stock ticker: ")
-    sma_days = int(input("Enter SMA period: "))
+    
+    try:
+        sma_days = int(input("Enter SMA period: "))
+    except ValueError:
+        print("Enter an integer")
+        raise SystemExit(0)
+    
     user_date = input("Enter the date (YYYY-MM-DD): ")
 
     get_sma_for_date(
@@ -140,7 +146,7 @@ if __name__ == "__main__":
     # Download
     data = yf.download(ticker, start=start, end=end, progress=False, auto_adjust=False)
     if data.empty or "Close" not in data.columns:
-        print(f"No 'Close' data for {ticker} in {start} to {end or 'today'}.")
+        print("Please enter the correct ticker.")
         raise SystemExit(0)
 
     closes = data["Close"].squeeze().astype(float).to_list()
