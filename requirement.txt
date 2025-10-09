@@ -1,0 +1,4 @@
+matplotlib
+yfinance
+flask
+flask-cors
