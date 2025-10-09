@@ -1,17 +1,50 @@
+<!--
+    User interface for up/down streak analysis and trading recommendations
+
+    Description:
+    input form for comprehensive stock analysis including:
+    - upward/downward price streak detection
+    - trading recommendations with currency conversion
+    - automatically uses 3 years of historical data
+    
+    Form fields:
+    - ticker: stock symbol input
+    - analysis_date: target date for analysis
+    - target_currency: currency for price conversion, default is usd
+    
+    Dependencies:
+    - flask route: /updwnruns2
+    - backend function: get_analysis_for_flask() from buy sell analysis.py
+    - currency conversion api (frankfurter.app)
+-->
 <!DOCTYPE html>
 <html>
 <head><title>Interactive Stock Analysis</title></head>
 <body>
     <center>
+        <!-- Page Header -->
         <h1>Interactive Stock Analysis</h1>
+        
+        <!-- Main Input Form -->
         <form action="/updwnruns2" method="POST">
+            <!-- Stock Ticker Input -->
             <p>Stock Ticker: <input type="text" name="ticker" value="SPY" required></p>
+            
+            <!-- Analysis Date Input -->
             <p>Analysis Date: <input type="date" name="analysis_date" required></p>
+            
+            <!-- Target Currency Input with Examples -->
             <p>Target Currency: <input type="text" name="target_currency" value="USD" placeholder="e.g. EUR, SGD, USD" required></p>
+            
+            <!-- Information About Data Usage -->
             <p><small>Analysis will use 3 years of historical data ending at the analysis year.</small></p>
+            
+            <!-- Submit Button -->
             <button type="submit">Run Analysis</button>
         </form>
-        <p><a href="/">← Back to main page</a></p>
+        
+        <!-- Navigation Back to Main Page -->
+        <p><a href="/">← Back to Main Page</a></p>
     </center>
 </body>
 </html>

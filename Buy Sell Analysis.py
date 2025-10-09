@@ -1,14 +1,9 @@
 """
 Stock Analysis and Trading Signal System
-Fetches historical stock data, performs technical analysis, and generates trading recommendations with optional currency conversion.
 
-Features:
-- Upward/Downward streak detection
-- Technical indicators (SMA deviation, trend slope, support/resistance)
-- Buy/Sell/Neutral recommendation with confidence level
-- Real-time currency conversion (via Frankfurter API)
-- Interactive CLI for custom ticker, date, and currency
-- Flask-ready utility functions for web integration
+This program gets stock data, does some basic analysis,
+and gives a simple buy/sell/neutral signal. It can also
+convert prices to other currencies.
 """
 
 import yfinance as yf
@@ -17,7 +12,7 @@ import numpy as np
 import requests
 
 """
-Setting the start and end year for data fetching and analysis
+Set the start and end years for pulling stock data.
 """
 START_YEAR = 2023
 END_YEAR = 2025
@@ -25,15 +20,7 @@ END_YEAR = 2025
 
 def convert_currency(amount: float, from_cur: str, to_cur: str) -> float | None:
     """
-    Converts the stock's native currency and displays it in the user's selected currency using the Frankfurter.app API.
-
-    Args:
-        amount (float): Amount to convert.
-        from_cur (str): Source currency code (e.g., "USD").
-        to_cur (str): Target currency code (e.g., "SGD").
-
-    Returns:
-        float | None: Converted amount, or None if conversion fails.
+    Convert a price from one currency to another using the Frankfurter API.
     """
     if from_cur == to_cur:
         return amount
@@ -49,19 +36,10 @@ def convert_currency(amount: float, from_cur: str, to_cur: str) -> float | None:
         print(f"[Error] Currency conversion failed: {e}")
         return None
 
+
 def calculate_streaks(prices: np.ndarray, df: pd.DataFrame):
     """
-    Identify consecutive upward and downward streaks for a stock ticker
-
-    Args:
-        prices (np.ndarray): Array of closing prices.
-        df (pd.DataFrame): Original DataFrame (used for indexing).
-
-    Returns:
-        tuple: 
-            - list[int]: Upward streak lengths.
-            - list[int]: Downward streak lengths.
-            - list[tuple]: Detailed streak info (start_date, end_date, length, direction, start_price, end_price).
+    Check how many days in a row the price went up or down.
     """
     if len(prices) < 2:
         return [], [], []
@@ -102,14 +80,9 @@ def calculate_streaks(prices: np.ndarray, df: pd.DataFrame):
 
 def print_streak_summary(up: list, down: list, details: list) -> None:
     """
-    Print a summary of upward and downward streak statistics.
-
-    Args:
-        up (list[int]): List of upward streak lengths.
-        down (list[int]): List of downward streak lengths.
-        details (list[tuple]): Detailed streak information.
+    Print how many up and down streaks there were and their lengths.
     """
-    print("\n=== STREAK ANALYSIS ===")
+    print("\n STREAK ANALYSIS ")
     print(f"Upward streaks: {len(up)} | Downward streaks: {len(down)}")
     if up:
         print(f"Longest up streak: {max(up)} days | Avg: {np.mean(up):.2f}")
@@ -119,16 +92,7 @@ def print_streak_summary(up: list, down: list, details: list) -> None:
 
 def get_runs_analysis(ticker="SPY", start_year=2023, end_year=2025):
     """
-    Compute upward and downward streak statistics for a ticker.
-    Flask-ready utility that returns a summary dict.
-
-    Args:
-        ticker (str, optional): Stock ticker symbol. Defaults to "SPY".
-        start_year (int, optional): Start year for analysis. Defaults to 2023.
-        end_year (int, optional): End year for analysis. Defaults to 2025.
-
-    Returns:
-        dict | None: Dictionary of streak metrics, or None if no data.
+    Get a summary of up and down runs for a ticker between two years.
     """
     try:
         tk = yf.Ticker(ticker)
@@ -152,30 +116,12 @@ def get_runs_analysis(ticker="SPY", start_year=2023, end_year=2025):
         }
     except Exception:
         return None
-    
+
 
 def get_recommendation(target_date_str: str, df: pd.DataFrame, currency: str,
                        sma_window: int = 20, lookback_days: int = 5, lookahead_days: int = 10) -> dict:
     """
-    Generate a trading recommendation for a given stock and date.
-
-    Args:
-        target_date_str (str): Target date (YYYY-MM-DD).
-        df (pd.DataFrame): Historical OHLCV DataFrame.
-        currency (str): Target currency code (e.g., "SGD").
-        sma_window (int, optional): SMA window length. Defaults to 20.
-        lookback_days (int, optional): Lookback period for slope. Defaults to 5.
-        lookahead_days (int, optional): Reserved for future use. Defaults to 10.
-
-    Returns:
-        dict: Recommendation details including:
-            - date
-            - price_native
-            - price_converted
-            - recommendation
-            - confidence_pct
-            - signals (list of indicator explanations)
-            or {"error": "..."} if analysis fails.
+    Give a simple buy, sell or neutral signal for a stock on a given date.
     """
     try:
         target_date = pd.to_datetime(target_date_str).tz_localize("UTC")
@@ -196,7 +142,7 @@ def get_recommendation(target_date_str: str, df: pd.DataFrame, currency: str,
     price = df["Close"].iloc[target_idx]
     signals, score = [], 0
 
-    #SMA deviation 
+    # SMA deviation 
     sma = df["Close"].rolling(window=sma_window).mean()
     sma_val = sma.iloc[target_idx]
     diff_abs = price - sma_val
@@ -210,7 +156,7 @@ def get_recommendation(target_date_str: str, df: pd.DataFrame, currency: str,
     else:
         signals.append(f"Price is {diff_abs:+.2f} ({diff_pct:.2f}%) near {sma_window}-day SMA ({sma_val:.2f})")
 
-    #Trend slope 
+    #  Trend slope 
     recent = df["Close"].iloc[target_idx - lookback_days:target_idx + 1]
     slope = np.polyfit(range(len(recent)), recent.values, 1)[0]
     if slope > 0:
@@ -220,15 +166,15 @@ def get_recommendation(target_date_str: str, df: pd.DataFrame, currency: str,
         signals.append(f"Downward trend ({slope:.2f}/day)")
         score += 1
 
-    #Support/Resistance 
+    # Support/Resistance 
     recent_high = df["High"].iloc[target_idx - 30:target_idx + 1].max()
     recent_low = df["Low"].iloc[target_idx - 30:target_idx + 1].min()
-    pos = (price - recent_low) / (recent_high - recent_low)
     dist_res_abs = recent_high - price
     dist_res_pct = (dist_res_abs / recent_high) * 100
     dist_sup_abs = price - recent_low
     dist_sup_pct = (dist_sup_abs / recent_low) * 100
 
+    pos = (price - recent_low) / (recent_high - recent_low)
     if pos > 0.8:
         signals.append(f"Price is {dist_res_abs:.2f} ({dist_res_pct:.2f}%) below 30-day resistance ({recent_high:.2f})")
         score -= 1
@@ -238,7 +184,7 @@ def get_recommendation(target_date_str: str, df: pd.DataFrame, currency: str,
     else:
         signals.append(f"Price is between support ({recent_low:.2f}) and resistance ({recent_high:.2f})")
 
-    #Final recommendation
+    # Final recommendation
     if score >= 2:
         rec = "BUY SIGNAL"
     elif score <= -2:
@@ -258,43 +204,80 @@ def get_recommendation(target_date_str: str, df: pd.DataFrame, currency: str,
         "signals": signals,
     }
 
-
+def get_analysis_for_flask(ticker="SPY", start_year=2023, end_year=2025, analysis_date="2024-01-01", target_currency="USD"):
+    """
+    Get comprehensive analysis for Flask web interface.
+    Combines runs analysis and trading recommendation.
+    """
+    try:
+        # Get runs analysis
+        runs_data = get_runs_analysis(ticker, start_year, end_year)
+        if runs_data is None:
+            return None
+        
+        # Get stock data for recommendation
+        tk = yf.Ticker(ticker)
+        df = tk.history(period="max")
+        df = df[(df.index.year >= start_year) & (df.index.year <= end_year)]
+        if df.empty:
+            return None
+        
+        # Get trading recommendation
+        recommendation = get_recommendation(analysis_date, df, target_currency)
+        if "error" in recommendation:
+            return None
+        
+        # Combine all data for Flask template
+        return {
+            "ticker": ticker,
+            "analysis_date": analysis_date,
+            "target_currency": target_currency,
+            "runs_analysis": runs_data,
+            "recommendation": recommendation,
+            "data_period": f"{start_year}-{end_year}"
+        }
+        
+    except Exception as e:
+        print(f"[Error] Analysis failed: {e}")
+        return None
+    
 def interactive_mode() -> None:
     """
-    Launch the interactive stock analysis session.
-
-    Prompts user for ticker, date, and currency, then:
-    - Fetches data
-    - Displays streak analysis
-    - Generates trading recommendation
-    - Converts price to target currency
+    Run the program in interactive mode using the terminal.
     """
-    print("\n" + "=" * 60)
-    print("INTERACTIVE STOCK ANALYSIS")
-    print("=" * 60)
+    print("\nINTERACTIVE STOCK ANALYSIS\n")
 
     while True:
         ticker = input("\nEnter stock ticker (e.g. SPY): ").strip().upper()
         if ticker.lower() in ["quit", "exit", "q"]:
             break
 
+        # Validate ticker
         try:
             tk = yf.Ticker(ticker)
             df = tk.history(period="max")
             df = df[(df.index.year >= START_YEAR) & (df.index.year <= END_YEAR)]
             if df.empty:
-                print(f"[Error] No data for {ticker} between {START_YEAR}-{END_YEAR}.")
+                print(f"[Error] '{ticker}' is not a valid ticker or has no data in the selected period.")
                 continue
         except Exception as e:
-            print(f"[Error] Failed to fetch data: {e}")
+            print(f"[Error] Failed to fetch data for '{ticker}': {e}")
             continue
 
+        # Show streak analysis
         up, down, details = calculate_streaks(df["Close"].values, df)
         print_streak_summary(up, down, details)
 
+        # Validate date
         date_in = input("Enter date (YYYY-MM-DD): ").strip()
         if date_in.lower() in ["quit", "exit", "q"]:
             break
+        try:
+            pd.to_datetime(date_in, format="%Y-%m-%d")
+        except ValueError:
+            print("[Error] Invalid date format. Please use YYYY-MM-DD.")
+            continue
+
         currency = input("Enter target currency (e.g. EUR, SGD, USD): ").strip().upper()
         if currency.lower() in ["quit", "exit", "q"]:
             break
@@ -304,7 +287,7 @@ def interactive_mode() -> None:
             print(f"[Error] {result['error']}")
             continue
 
-        print(f"\n=== Analysis for {result['date']} — {ticker} ===")
+        print(f"\n Analysis for {result['date']} — {ticker} ")
         print(f"Native Price: {result['price_native']:.2f} USD")
         if result["price_converted"] is not None:
             print(f"Converted Price: {result['price_converted']:.2f} {currency}")
@@ -315,7 +298,6 @@ def interactive_mode() -> None:
         print("\nIndicators:")
         for i, s in enumerate(result["signals"], 1):
             print(f"  {i}. {s}")
-        print("-" * 50)
 
 
 if __name__ == "__main__":

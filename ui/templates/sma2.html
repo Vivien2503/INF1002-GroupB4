@@ -1,17 +1,40 @@
+<!--
+    Display calculated SMA results with analysis details
+    
+    Description:
+    Results page showing:
+    - Calculated SMA value for the specified ticker and date
+    - Analysis parameters (ticker, date, period)
+    - Navigation back to calculator and main page
+    
+    Template Variables:
+    - ticker: Stock symbol analyzed
+    - end_date: Date of analysis 
+    - period: SMA period in days
+    - sma_value: Calculated SMA result
+    
+    Dependencies:
+    - Flask route: /sma2
+    - Backend function: get_sma_for_date() from profit_and_sma.py
+-->
 <!DOCTYPE html>
 <html>
 <head>
     <title>SMA Results</title>
 </head>
 <body>
+    <!-- Page Header -->
     <h1>SMA Results</h1>
     
+    <!-- Analysis Details -->
     <h2>{{ ticker }} Simple Moving Average</h2>
     <p><b>Analysis Date:</b> {{ end_date }}</p>
     <p><b>SMA Period:</b> {{ period }} days</p>
     
+    <!-- Result Value -->
     <h1>${{ sma_value }}</h1>
     
+    <!-- Calculation Source -->
     <p>Calculated using profit_and_sma.py</p>
 
     <p>

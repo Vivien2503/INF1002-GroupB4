@@ -1,17 +1,42 @@
+<!--
+    User interface for calculating daily stock returns
+    
+    Description:
+    Input form for daily return calculation allowing users to:
+    - select target date for analysis
+    - enter stock ticker symbol
+    - submit to /dailyreturncalc2 route for processing
+    
+    Form fields:
+    - target_date: specific date for return calculation with constraints
+    - ticker: stock symbol input (default: spy)
+    
+    Dependencies:
+    - flask route: /dailyreturncalc2 (post method)
+    - backend function: get_daily_return_analysis() from simpledailyreturn.py
+-->
 <!DOCTYPE html>
 <html>
 <head>
     <title>Daily Returns Calculator</title>
 </head>
 <body>
+    <!-- Page Header -->
     <h1>Daily Returns Calculator</h1>
     
+    <!-- Main Input Form -->
     <form action="/dailyreturncalc2" method="POST">
+        <!-- Target Date Input with Constraints -->
         <p>Target Date: <input type="date" name="target_date" min="2023-01-01" max="{{max_date}}" required></p>
+        
+        <!-- Ticker Symbol Input -->
         <p>Ticker: <input type="text" name="ticker" value="SPY" required></p>
+        
+        <!-- Submit Button -->
         <p><button type="submit">Calculate Daily Return</button></p>
     </form>
     
-    <p><a href="/">Back to main page</a></p>
+    <!-- Navigation Back to Main Page -->
+    <p><a href="/">Back to Main Page</a></p>
 </body>
 </html>

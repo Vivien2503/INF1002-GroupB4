@@ -1,15 +1,38 @@
+<!--
+    Display calculated daily return results and analysis
+
+    Description:
+    Results page showing:
+    - Daily return calculations
+    - Stock price information for the target date
+    - Comparison between calculation methods
+    
+    Template Variables:
+    - ticker: Stock symbol analyzed
+    - date: Target date for analysis
+    - close_price: Closing price on target date
+    - builtin_return: Pandas calculated return percentage
+    - manual_return: Manually calculated return percentage
+    
+    Dependencies:
+    - Flask route: /dailyreturncalc2
+    - Backend function: get_daily_return_analysis() from SimpleDailyReturn.py
+-->
 <!DOCTYPE html>
 <html>
 <head>
     <title>Daily Return Results</title>
 </head>
 <body>
+    <!-- Page Header -->
     <h1>Daily Return Results</h1>
     
+    <!-- Analysis Details -->
     <h2>{{ticker}} Daily Return Analysis</h2>
     <p><b>Date:</b> {{ date }}</p>
     <p><b>Close Price:</b> ${{ close_price }}</p>
     
+    <!-- Return Calculations -->
     <h3>Daily Returns:</h3>
     <p><b>Built-in Return (pandas):</b> {{ builtin_return }}%</p>
     <p><b>Manual Return:</b> {{ manual_return }}%</p>
