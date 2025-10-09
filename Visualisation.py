@@ -6,7 +6,7 @@ This module contains functions to fetch price history and produce plots:
     visualize the longest runs.
 
 The scripts use yfinance to fetch data and matplotlib for plotting.
-"'"
+"""
 import matplotlib
 try:
     matplotlib.use("TkAgg")  
