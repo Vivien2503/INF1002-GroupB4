@@ -1,18 +1,55 @@
+<!--
+================================================================
+    Simple Moving Average Calculator - Input Form
+================================================================
+    File: sma.html
+    Purpose: User interface for calculating Simple Moving Averages
+    Author: INF1002-GroupB4
+    Date: October 2025
+    
+    Description:
+    Input form for SMA calculation allowing users to:
+    - Enter stock ticker symbols (e.g., SPY, AAPL, MSFT)
+    - Select analysis date (automatically calculates sufficient historical data)
+    - Choose SMA period (number of days to average)
+    - Submit to /sma2 route for processing
+    
+    Form Fields:
+    - ticker: Stock symbol input with placeholder examples
+    - end_date: Target date for SMA calculation with date constraints
+    - sma_period: Number of days for moving average (default: 30, min: 1)
+    
+    Dependencies:
+    - Flask route: /sma2 (POST method)
+    - Backend function: get_sma_for_date() from profit_and_sma.py
+    - Template variable: max_date (current date from Flask)
+================================================================
+-->
 <!DOCTYPE html>
 <html>
 <head>
     <title>SMA Calculator</title>
 </head>
 <body>
+    <!-- Page Header -->
     <h1>Simple Moving Average Calculator</h1>
     
+    <!-- Main Input Form -->
     <form action="/sma2" method="POST">
+        <!-- Stock Ticker Input with Examples -->
         <p>Ticker Symbol: <input type="text" name="ticker" value="SPY" placeholder="e.g., SPY, AAPL, MSFT" required></p>
+        
+        <!-- Analysis Date Input with Constraints -->
         <p>Input Date: <input type="date" name="end_date" min="2023-01-01" max="{{max_date}}" required></p>
+        
+        <!-- SMA Period Input with Validation -->
         <p>SMA Period: <input type="number" name="sma_period" value="30" min="1" required> days</p>
+        
+        <!-- Submit Button -->
         <p><button type="submit">Calculate SMA</button></p>
     </form>
     
-    <p><a href="/">Back to main page</a></p>
+    <!-- Navigation Back to Main Page -->
+    <p><a href="/">Back to Main Page</a></p>
 </body>
 </html>

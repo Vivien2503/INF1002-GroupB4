@@ -1,3 +1,24 @@
+<!--
+================================================================
+    main navigation page for stock market trend analysis tool
+================================================================
+    file: index.html
+    purpose: landing page with navigation buttons to all analysis tools
+    author: inf1002-groupb4
+    date: october 2025
+    
+    description:
+    main entry point for the web application providing access to:
+    - simple moving average calculator
+    - interactive stock analysis (up/down runs)
+    - daily returns calculator
+    - maximum profit calculator
+    
+    dependencies:
+    - style.css: button styling and layout
+    - flask routes: /sma, /updwnruns, /dailyreturncalc, /maxprofcalc
+================================================================
+-->
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,22 +26,28 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <!-- Page Header -->
     <h1>Hello! Welcome to the Stock Market Trend Analysis Tool!</h1>
     <p style="font-size: 24px;">Choose one of the following functions:</p>
     
+    <!-- Navigation Buttons for Analysis Tools -->
     <div> 
+        <!-- Simple Moving Average Calculator -->
         <form action="/sma" method="GET" style="display: inline;">
             <button type="submit" class="button-box red">Simple Moving Average<br>Calculation</button>
         </form>
         
+        <!-- Interactive Stock Analysis -->
         <form action="/updwnruns" method="GET" style="display: inline;">
             <button type="submit" class="button-box blue">Interactive Stock<br>Analysis</button>
         </form>
         
+        <!-- Daily Returns Calculator -->
         <form action="/dailyreturncalc" method="GET" style="display: inline;">
             <button type="submit" class="button-box orange">Daily Returns<br>Calculation</button>
         </form>
         
+        <!-- Maximum Profit Calculator -->
         <form action="/maxprofcalc" method="GET" style="display: inline;">
             <button type="submit" class="button-box green">Maximum Profit<br>Calculation</button>
         </form>

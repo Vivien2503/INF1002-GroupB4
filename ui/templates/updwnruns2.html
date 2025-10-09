@@ -1,13 +1,46 @@
+<!--
+================================================================
+    Interactive Stock Analysis - Results Page
+================================================================
+    File: updwnruns2.html
+    Purpose: Display comprehensive stock analysis results including streaks and trading recommendations
+    Author: INF1002-GroupB4
+    Date: October 2025
+    
+    Description:
+    Results page showing:
+    - Upward/downward streak analysis and statistics
+    - Trading recommendations with currency conversion
+    - Analysis based on 3 years of historical data
+    
+    Template Variables:
+    - result.ticker: Stock symbol analyzed
+    - result.upward_count/downward_count: Number of streaks
+    - result.longest_up_streak/longest_down_streak: Longest streaks in days
+    - result.avg_up_streak/avg_down_streak: Average streak lengths
+    - result.recommendation: Trading analysis and price data
+    - result.analysis_date: Target date for analysis
+    - result.target_currency: Currency for price conversion
+    
+    Dependencies:
+    - Flask route: /updwnruns2 (POST processing)
+    - Backend function: get_analysis_for_flask() from Buy Sell Analysis.py
+    - Currency conversion API (Frankfurter.app)
+================================================================
+-->
 <!DOCTYPE html>
 <html>
 <head>
     <title>Interactive Stock Analysis Results</title>
 </head>
 <body>
+    <!-- Page Header -->
     <h1>Interactive Stock Analysis Results</h1>
     
+    <!-- Stock Analysis Header -->
     <h2>{{ result.ticker }} Analysis</h2>
     
+    <!-- Streak Analysis Section -->
     <h3>Streak Analysis</h3>
     <p><b>Upward streaks:</b> {{ result.upward_count }} | <b>Downward streaks:</b> {{ result.downward_count }}</p>
     <p><b>Longest up streak:</b> {{ result.longest_up_streak }} days | <b>Average:</b> {{ result.avg_up_streak }}</p>

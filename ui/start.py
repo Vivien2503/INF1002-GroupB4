@@ -1,3 +1,29 @@
+"""
+Flask Web Application for Stock Market Trend Analysis Tool
+
+This module provides a web interface for various stock analysis functions:
+- Simple Moving Average calculation
+- Daily Returns analysis  
+- Maximum Profit calculation
+- Interactive Stock Analysis with up/down runs
+
+Author: INF1002-GroupB4
+Date: October 2025
+
+Dependencies:
+- Flask: Web framework
+- profit_and_sma.py: SMA and profit analysis functions
+- SimpleDailyReturn.py: Daily return calculations
+- Buy Sell Analysis.py: Streak and trading analysis
+
+Routes:
+- /: Main page with navigation buttons
+- /sma, /sma2: Simple Moving Average calculator
+- /dailyreturncalc, /dailyreturncalc2: Daily Returns calculator
+- /maxprofcalc, /maxprofcalc2: Maximum Profit calculator
+- /updwnruns, /updwnruns2: Interactive Stock Analysis
+"""
+
 from flask import Flask, render_template, request
 from datetime import datetime, timedelta
 import sys
@@ -40,18 +66,45 @@ app = Flask(__name__)
 
 # Helper function for common date formatting
 def get_today():
+    """
+    Get current date in YYYY-MM-DD format for HTML date inputs
+    
+    Returns:
+        str: Current date formatted as YYYY-MM-DD
+    """
     return datetime.now().strftime('%Y-%m-%d')
 
 # Helper function for error responses
 def error_response(message):
+    """
+    Create standardized error response HTML
+    
+    Args:
+        message (str): Error message to display
+        
+    Returns:
+        str: Formatted HTML error message
+    """
     return f"<h2>Error: {message}</h2>"
 
 @app.route('/')
 def index():
+    """
+    Main page route displaying navigation buttons for all analysis tools
+    
+    Returns:
+        str: Rendered index.html template with navigation buttons
+    """
     return render_template('index.html')
 
 @app.route('/sma')
 def sma_page():
+    """
+    Simple Moving Average input form page
+    
+    Returns:
+        str: Rendered sma.html template with current date
+    """
     return render_template('sma.html', max_date=get_today())
 
 @app.route('/updwnruns')

@@ -1,7 +1,30 @@
+/*
+================================================================
+    Main Stylesheet for Stock Market Trend Analysis Tool
+================================================================
+    File: style.css
+    Purpose: Styling for main navigation page and common elements
+    Author: INF1002-GroupB4
+    Date: October 2025
+    
+    Description:
+    Defines styles for the main page navigation buttons and layout.
+    Includes hover effects and color schemes for different analysis tools.
+    
+    Components:
+    - body: Page layout and centering
+    - .button-box: Main navigation button styling
+    - Color classes: red, blue, orange, green for different tools
+    - Hover effects: Opacity changes on mouse over
+================================================================
+*/
+
+/* Page layout - center all content */
 body {
     text-align: center;
 }
 
+/* Main navigation button styling */
 .button-box {
     border: none;
     color: black;
@@ -14,9 +37,11 @@ body {
     display: inline-block;
 }
 
-.red { background-color: #f44336; }
-.blue { background-color: #2196F3; }
-.orange { background-color: #ff9800; }
-.green { background-color: #4CAF50; }
+/* Button color schemes for different analysis tools */
+.red { background-color: #f44336; }    /* Simple Moving Average */
+.blue { background-color: #2196F3; }   /* Interactive Stock Analysis */
+.orange { background-color: #ff9800; } /* Daily Returns */
+.green { background-color: #4CAF50; }  /* Maximum Profit */
 
+/* Hover effect for all buttons */
 .button-box:hover { opacity: 0.8; }

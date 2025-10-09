@@ -1,16 +1,47 @@
+<!--
+================================================================
+    Maximum Profit Calculator - Results Page
+================================================================
+    File: maxprofcalc2.html
+    Purpose: Display maximum profit analysis results and trade details
+    Author: INF1002-GroupB4
+    Date: October 2025
+    
+    Description:
+    Results page showing:
+    - Maximum profit achievable in the specified period
+    - Trading statistics and period information
+    - Optimal buy/sell analysis details
+    
+    Template Variables:
+    - ticker: Stock symbol analyzed
+    - start_date: Beginning of analysis period
+    - end_date: End of analysis period
+    - trading_days: Number of trading days in period
+    - num_trades: Number of optimal trades identified
+    - max_profit: Maximum profit achievable
+    
+    Dependencies:
+    - Flask route: /maxprofcalc2 (POST processing)
+    - Backend function: get_max_profit_analysis() from profit_and_sma.py
+================================================================
+-->
 <!DOCTYPE html>
 <html>
 <head>
     <title>Max Profit Results</title>
 </head>
 <body>
+    <!-- Page Header -->
     <h1>Max Profit Results</h1>
     
+    <!-- Analysis Details -->
     <h2>{{ticker}} Maximum Profit Analysis</h2>
     <p><b>Period:</b> {{ start_date }} to {{ end_date }}</p>
     <p><b>Trading Days:</b> {{ trading_days }}</p>
     <p><b>Number of Trades:</b> {{ num_trades }}</p>
     
+    <!-- Result Value -->
     <h1>${{ max_profit }}</h1>
     
     <p>Calculated using profit_and_sma.py</p>
