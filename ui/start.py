@@ -7,9 +7,6 @@ This module provides a web interface for various stock analysis functions:
 - Maximum Profit calculation
 - Interactive Stock Analysis with up/down runs
 
-Author: INF1002-GroupB4
-Date: October 2025
-
 Dependencies:
 - Flask: Web framework
 - profit_and_sma.py: SMA and profit analysis functions
