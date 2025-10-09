@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Visualisation.py
-'''Visualization helpers for financial time series.'''
+'''Visualization helpers for financial time series.
 
 This module contains functions to fetch price history and produce plots:
 - plot_sma: saves a chart of Close price with a simple moving average (SMA).
