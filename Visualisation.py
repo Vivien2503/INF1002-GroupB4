@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-# Visualisation.py
-'''Visualization helpers for financial time series.
+"""Visualization helpers for financial time series.
 
 This module contains functions to fetch price history and produce plots:
 - plot_sma: saves a chart of Close price with a simple moving average (SMA).
@@ -8,7 +6,7 @@ This module contains functions to fetch price history and produce plots:
     visualize the longest runs.
 
 The scripts use yfinance to fetch data and matplotlib for plotting.
-'''
+"'"
 import matplotlib
 try:
     matplotlib.use("TkAgg")  
