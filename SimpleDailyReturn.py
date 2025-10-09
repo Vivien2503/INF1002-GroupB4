@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# SimpleDailyReturn.py
 """
 Fetch historical prices and compute simple daily returns.
 Supports both CLI (multi-ticker) and Flask integration.
@@ -37,6 +35,11 @@ def get_daily_return_analysis(tickers="SPY", target_dates=None, start="2023-01-0
             target_dates = [target_dates]
 
         if not tickers or not target_dates:
+            return results
+
+        # If any provided ticker is an empty/blank string treat as invalid and
+        # return an empty results list so the caller can handle it as 'no data'.
+        if any((not isinstance(t, str)) or (t.strip() == "") for t in tickers):
             return results
 
         for ticker in tickers:
@@ -94,7 +97,7 @@ def main():
     for ticker in tickers:
         df = get_data(ticker)
         if df.empty:
-            print(f"No data returned for {ticker}.")
+            print(f"No data returned for {ticker}. Please enter a valid ticker and try again.")
             continue
 
         builtin, manual = compute_daily_returns(df)
