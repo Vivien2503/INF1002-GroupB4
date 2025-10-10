@@ -26,9 +26,9 @@ from datetime import datetime, timedelta
 import sys
 import os
 
-# Import functions from profit_and_sma.py
+# Import functions from SMA_and_MaxProfit.py
 try:
-    # Add parent directory to Python path to import profit_and_sma.py
+    # Add parent directory to Python path to import SMA_and_MaxProfit.py
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from SMA_and_MaxProfit import get_sma_for_date, get_max_profit_analysis
     HAS_PROFIT_SMA = True

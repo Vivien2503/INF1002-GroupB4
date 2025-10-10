@@ -35,9 +35,9 @@
     
     <!-- Streak Analysis Section -->
     <h3>Streak Analysis</h3>
-    <p><b>Upward streaks:</b> {{ result.upward_count }} | <b>Downward streaks:</b> {{ result.downward_count }}</p>
-    <p><b>Longest up streak:</b> {{ result.longest_up_streak }} days | <b>Average:</b> {{ result.avg_up_streak }}</p>
-    <p><b>Longest down streak:</b> {{ result.longest_down_streak }} days | <b>Average:</b> {{ result.avg_down_streak }}</p>
+    <p><b>Upward streaks:</b> {{ result.runs_analysis.upward_streaks }} | <b>Downward streaks:</b> {{ result.runs_analysis.downward_streaks }}</p>
+    <p><b>Longest up streak:</b> {{ result.runs_analysis.longest_up_streak }} days | <b>Average:</b> {{ result.runs_analysis.avg_up_streak }}</p>
+    <p><b>Longest down streak:</b> {{ result.runs_analysis.longest_down_streak }} days | <b>Average:</b> {{ result.runs_analysis.avg_down_streak }}</p>
     
     {% if result.recommendation %}
         {% if result.recommendation.error %}
